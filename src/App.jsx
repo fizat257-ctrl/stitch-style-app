@@ -2,21 +2,32 @@ import { useEffect, useState } from "react";
 import { supabase } from "./supabaseClient";
 import Admin from "./Admin";
 import AdminLogin from "./AdminLogin";
+import Cart from "./Cart";
 
 function App() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const [cart, setCart] = useState(() => {
+    const savedCart = localStorage.getItem("cart");
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
+
   const path = window.location.pathname;
 
   const isAdmin = path === "/admin";
   const isAdminLogin = path === "/admin-login";
+  const isCart = path === "/cart";
 
   useEffect(() => {
-    if (!isAdmin && !isAdminLogin) {
+    localStorage.setItem("cart", JSON.stringify(cart));
+  }, [cart]);
+
+  useEffect(() => {
+    if (!isAdmin && !isAdminLogin && !isCart) {
       fetchProducts();
     }
-  }, [isAdmin, isAdminLogin]);
+  }, [isAdmin, isAdminLogin, isCart]);
 
   async function fetchProducts() {
     const { data, error } = await supabase
@@ -34,7 +45,36 @@ function App() {
     setLoading(false);
   }
 
-  // Admin Login Page
+  function addToCart(product) {
+    const existingProduct = cart.find(
+      (item) => item.id === product.id
+    );
+
+    if (existingProduct) {
+      setCart(
+        cart.map((item) =>
+          item.id === product.id
+            ? {
+                ...item,
+                quantity: item.quantity + 1,
+              }
+            : item
+        )
+      );
+    } else {
+      setCart([
+        ...cart,
+        {
+          ...product,
+          quantity: 1,
+        },
+      ]);
+    }
+
+    alert(`${product.name} added to cart!`);
+  }
+
+  // Admin Login
   if (isAdminLogin) {
     return <AdminLogin />;
   }
@@ -42,6 +82,11 @@ function App() {
   // Admin Dashboard
   if (isAdmin) {
     return <Admin />;
+  }
+
+  // Cart Page
+  if (isCart) {
+    return <Cart />;
   }
 
   return (
@@ -88,6 +133,17 @@ function App() {
           </a>
 
           <a
+            href="/cart"
+            style={{
+              textDecoration: "none",
+              color: "#222",
+              fontWeight: "bold",
+            }}
+          >
+            🛒 Cart ({cart.reduce((total, item) => total + item.quantity, 0)})
+          </a>
+
+          <a
             href="/admin-login"
             style={{ textDecoration: "none", color: "#222" }}
           >
@@ -96,7 +152,7 @@ function App() {
         </nav>
       </header>
 
-      {/* Hero Section */}
+      {/* Hero */}
 
       <section
         style={{
@@ -126,7 +182,7 @@ function App() {
         </p>
       </section>
 
-      {/* Products Section */}
+      {/* Products */}
 
       <section
         id="products"
@@ -218,6 +274,29 @@ function App() {
                     ? `In Stock: ${product.stock}`
                     : "Out of Stock"}
                 </p>
+
+                {/* Add to Cart */}
+
+                <button
+                  onClick={() => addToCart(product)}
+                  disabled={product.stock <= 0}
+                  style={{
+                    width: "100%",
+                    padding: "12px",
+                    marginTop: "10px",
+                    border: "none",
+                    borderRadius: "8px",
+                    cursor:
+                      product.stock > 0
+                        ? "pointer"
+                        : "not-allowed",
+                    fontWeight: "bold",
+                  }}
+                >
+                  {product.stock > 0
+                    ? "🛒 Add to Cart"
+                    : "Out of Stock"}
+                </button>
               </div>
             ))}
           </div>
