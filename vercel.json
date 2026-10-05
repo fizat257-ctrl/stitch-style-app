@@ -7,6 +7,10 @@
     {
       "source": "/admin-login",
       "destination": "/"
+    },
+    {
+      "source": "/cart",
+      "destination": "/"
     }
   ]
 }
