@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { supabase } from "./supabaseClient";
 
 function Checkout() {
   const [orderPlaced, setOrderPlaced] = useState(false);
@@ -24,11 +25,32 @@ function Checkout() {
     });
   }
 
-  function handleSubmit(e) {
-    e.preventDefault();
+  async function handleSubmit(e) {
+  e.preventDefault();
 
-    setOrderPlaced(true);
-  }
+  const { error } = await supabase
+    .from("orders")
+    .insert([
+      {
+        customer_name: customer.name,
+        phone: customer.phone,
+        address: customer.address,
+        city: customer.city,
+        total: total,
+        status: "pending",
+      },
+    ]);
+
+ if (error) {
+  console.error("Order error:", error);
+  alert(`❌ ${error.message}`);
+  return;
+}
+
+  setOrderPlaced(true);
+
+  localStorage.removeItem("cart");
+}
 
   if (cart.length === 0) {
     return (
