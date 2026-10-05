@@ -3,6 +3,7 @@ import { supabase } from "./supabaseClient";
 import Admin from "./Admin";
 import AdminLogin from "./AdminLogin";
 import Cart from "./Cart";
+import Checkout from "./Checkout";
 
 function App() {
   const [products, setProducts] = useState([]);
@@ -18,16 +19,17 @@ function App() {
   const isAdmin = path === "/admin";
   const isAdminLogin = path === "/admin-login";
   const isCart = path === "/cart";
+  const isCheckout = path === "/checkout";
 
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);
 
   useEffect(() => {
-    if (!isAdmin && !isAdminLogin && !isCart) {
+    if (!isAdmin && !isAdminLogin && !isCart && !isCheckout) {
       fetchProducts();
     }
-  }, [isAdmin, isAdminLogin, isCart]);
+  }, [isAdmin, isAdminLogin, isCart, isCheckout]);
 
   async function fetchProducts() {
     const { data, error } = await supabase
@@ -89,6 +91,11 @@ function App() {
     return <Cart />;
   }
 
+  // Checkout Page
+  if (isCheckout) {
+    return <Checkout />;
+  }
+
   return (
     <div
       style={{
@@ -121,13 +128,22 @@ function App() {
             flexWrap: "wrap",
           }}
         >
-          <a href="/" style={{ textDecoration: "none", color: "#222" }}>
+          <a
+            href="/"
+            style={{
+              textDecoration: "none",
+              color: "#222",
+            }}
+          >
             Home
           </a>
 
           <a
             href="/#products"
-            style={{ textDecoration: "none", color: "#222" }}
+            style={{
+              textDecoration: "none",
+              color: "#222",
+            }}
           >
             Products
           </a>
@@ -140,12 +156,20 @@ function App() {
               fontWeight: "bold",
             }}
           >
-            🛒 Cart ({cart.reduce((total, item) => total + item.quantity, 0)})
+            🛒 Cart (
+            {cart.reduce(
+              (total, item) => total + item.quantity,
+              0
+            )}
+            )
           </a>
 
           <a
             href="/admin-login"
-            style={{ textDecoration: "none", color: "#222" }}
+            style={{
+              textDecoration: "none",
+              color: "#222",
+            }}
           >
             Admin
           </a>
@@ -225,7 +249,8 @@ function App() {
                   background: "white",
                   borderRadius: "15px",
                   padding: "15px",
-                  boxShadow: "0 5px 20px rgba(0,0,0,0.08)",
+                  boxShadow:
+                    "0 5px 20px rgba(0,0,0,0.08)",
                 }}
               >
                 {product.image_url ? (
@@ -314,7 +339,9 @@ function App() {
           textAlign: "center",
         }}
       >
-        <p>© 2026 Stitch & Style. All rights reserved.</p>
+        <p>
+          © 2026 Stitch & Style. All rights reserved.
+        </p>
       </footer>
     </div>
   );
