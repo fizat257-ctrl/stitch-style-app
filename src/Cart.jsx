@@ -103,15 +103,17 @@ function Cart() {
 
           <h2>Total: Rs. {total}</h2>
 
-          <button
-            style={{
-              padding: "12px 25px",
-              fontSize: "16px",
-              cursor: "pointer",
-            }}
-          >
-            Proceed to Checkout
-          </button>
+         <a href="/checkout">
+  <button
+    style={{
+      padding: "12px 25px",
+      fontSize: "16px",
+      cursor: "pointer",
+    }}
+  >
+    Proceed to Checkout
+  </button>
+</a>
         </>
       )}
     </div>
