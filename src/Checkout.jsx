@@ -26,31 +26,60 @@ function Checkout() {
   }
 
   async function handleSubmit(e) {
-  e.preventDefault();
+    e.preventDefault();
 
-  const { error } = await supabase
-    .from("orders")
-    .insert([
-      {
-        customer_name: customer.name,
-        phone: customer.phone,
-        address: customer.address,
-        city: customer.city,
-        total: total,
-        status: "pending",
-      },
-    ]);
+    // Step 1: Save customer order
+    const { data: order, error: orderError } = await supabase
+      .from("orders")
+      .insert([
+        {
+          customer_name: customer.name,
+          phone: customer.phone,
+          address: customer.address,
+          city: customer.city,
+          total: total,
+          status: "pending",
+        },
+      ])
+      .select()
+      .single();
 
- if (error) {
-  console.error("Order error:", error);
-  alert(`❌ ${error.message}`);
-  return;
-}
+    if (orderError) {
+      console.error("Order error:", orderError);
+      alert(`❌ ${orderError.message}`);
+      return;
+    }
 
-  setOrderPlaced(true);
+    // Step 2: Save ordered products
+    const orderItems = cart.map((item) => ({
+      order_id: order.id,
+      product_id: item.id,
+      product_name: item.name,
+      price: Number(item.price),
+      quantity: item.quantity,
+      image_url: item.image_url || "",
+    }));
 
-  localStorage.removeItem("cart");
-}
+    const { error: itemsError } = await supabase
+      .from("order_items")
+      .insert(orderItems);
+
+    if (itemsError) {
+      console.error("Order items error:", itemsError);
+
+      alert(
+        `⚠️ Order created, but products could not be saved: ${itemsError.message}`
+      );
+
+      return;
+    }
+
+    // Step 3: Show success message
+    setOrderPlaced(true);
+
+    // Step 4: Clear cart
+    localStorage.removeItem("cart");
+  }
 
   if (cart.length === 0) {
     return (
