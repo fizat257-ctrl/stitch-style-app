@@ -1,0 +1,502 @@
+import { useEffect, useState } from "react";
+import { supabase } from "./supabaseClient";
+
+function Admin() {
+  const [products, setProducts] = useState([]);
+
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("");
+  const [category, setCategory] = useState("Clothing");
+  const [stock, setStock] = useState("");
+  const [imageFile, setImageFile] = useState(null);
+
+  const [editingId, setEditingId] = useState(null);
+  const [message, setMessage] = useState("");
+
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    checkUser();
+  }, []);
+
+  async function checkUser() {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      window.location.href = "/admin-login";
+      return;
+    }
+
+    setUser(user);
+    setLoading(false);
+    fetchProducts();
+  }
+
+  async function fetchProducts() {
+    const { data, error } = await supabase
+      .from("products")
+      .select("*")
+      .order("id", { ascending: false });
+
+    if (error) {
+      console.error(error);
+      setMessage("❌ Products load nahi huay.");
+      return;
+    }
+
+    setProducts(data || []);
+  }
+
+  async function uploadImage() {
+    if (!imageFile) {
+      return null;
+    }
+
+    const fileExtension = imageFile.name.split(".").pop();
+
+    const fileName = `${Date.now()}-${Math.random()
+      .toString(36)
+      .substring(2)}.${fileExtension}`;
+
+    const { error } = await supabase.storage
+      .from("products")
+      .upload(fileName, imageFile);
+
+    if (error) {
+      console.error("Image upload error:", error);
+      return null;
+    }
+
+    const { data } = supabase.storage
+      .from("products")
+      .getPublicUrl(fileName);
+
+    return data.publicUrl;
+  }
+
+  async function addProduct(e) {
+    e.preventDefault();
+    setMessage("");
+
+    let imageUrl = null;
+
+    if (imageFile) {
+      imageUrl = await uploadImage();
+
+      if (!imageUrl) {
+        setMessage("❌ Image upload nahi hui.");
+        return;
+      }
+    }
+
+    const { error } = await supabase.from("products").insert([
+      {
+        name,
+        description,
+        price: Number(price),
+        category,
+        stock: Number(stock),
+        image_url: imageUrl,
+      },
+    ]);
+
+    if (error) {
+      console.error(error);
+      setMessage("❌ Product add nahi hua.");
+      return;
+    }
+
+    setMessage("✅ Product successfully add ho gaya!");
+
+    clearForm();
+    fetchProducts();
+  }
+
+  async function deleteProduct(id) {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this product?"
+    );
+
+    if (!confirmDelete) {
+      return;
+    }
+
+    const { error } = await supabase
+      .from("products")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      console.error(error);
+      setMessage("❌ Product delete nahi hua.");
+      return;
+    }
+
+    setMessage("✅ Product deleted successfully!");
+
+    fetchProducts();
+  }
+
+  function startEdit(product) {
+    setEditingId(product.id);
+    setName(product.name);
+    setDescription(product.description || "");
+    setPrice(product.price);
+    setCategory(product.category);
+    setStock(product.stock);
+    setImageFile(null);
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }
+
+  async function updateProduct(e) {
+    e.preventDefault();
+    setMessage("");
+
+    let imageUrl = null;
+
+    if (imageFile) {
+      imageUrl = await uploadImage();
+
+      if (!imageUrl) {
+        setMessage("❌ New image upload nahi hui.");
+        return;
+      }
+    }
+
+    const updateData = {
+      name,
+      description,
+      price: Number(price),
+      category,
+      stock: Number(stock),
+    };
+
+    if (imageUrl) {
+      updateData.image_url = imageUrl;
+    }
+
+    const { error } = await supabase
+      .from("products")
+      .update(updateData)
+      .eq("id", editingId);
+
+    if (error) {
+      console.error(error);
+      setMessage("❌ Product update nahi hua.");
+      return;
+    }
+
+    setMessage("✅ Product updated successfully!");
+
+    clearForm();
+    fetchProducts();
+  }
+
+  function clearForm() {
+    setEditingId(null);
+    setName("");
+    setDescription("");
+    setPrice("");
+    setCategory("Clothing");
+    setStock("");
+    setImageFile(null);
+  }
+
+  async function logout() {
+    await supabase.auth.signOut();
+    window.location.href = "/admin-login";
+  }
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          textAlign: "center",
+          padding: "80px",
+        }}
+      >
+        <h2>Loading Admin Dashboard...</h2>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      style={{
+        maxWidth: "1100px",
+        margin: "auto",
+        padding: "40px 20px",
+      }}
+    >
+      {/* Header */}
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: "20px",
+          flexWrap: "wrap",
+        }}
+      >
+        <div>
+          <h1>Stitch & Style Admin Dashboard</h1>
+
+          <p>
+            Logged in as: <strong>{user?.email}</strong>
+          </p>
+        </div>
+
+        <button
+          onClick={logout}
+          style={{
+            background: "#222",
+            color: "white",
+            padding: "10px 18px",
+            borderRadius: "8px",
+            border: "none",
+            cursor: "pointer",
+          }}
+        >
+          Logout
+        </button>
+      </div>
+
+      {/* Add / Edit Product */}
+
+      <h2 style={{ marginTop: "30px" }}>
+        {editingId ? "Edit Product" : "Add New Product"}
+      </h2>
+
+      <form
+        onSubmit={editingId ? updateProduct : addProduct}
+        style={{
+          background: "white",
+          padding: "25px",
+          borderRadius: "15px",
+          marginTop: "20px",
+          boxShadow: "0 5px 20px rgba(0,0,0,0.08)",
+        }}
+      >
+        <div style={{ marginBottom: "15px" }}>
+          <label>Product Name</label>
+          <br />
+
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Enter product name"
+            required
+            style={{
+              width: "100%",
+              padding: "10px",
+              marginTop: "5px",
+            }}
+          />
+        </div>
+
+        <div style={{ marginBottom: "15px" }}>
+          <label>Description</label>
+          <br />
+
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Enter product description"
+            style={{
+              width: "100%",
+              padding: "10px",
+              minHeight: "80px",
+              marginTop: "5px",
+            }}
+          />
+        </div>
+
+        <div style={{ marginBottom: "15px" }}>
+          <label>Price</label>
+          <br />
+
+          <input
+            type="number"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            placeholder="Enter price"
+            required
+            min="0"
+            style={{
+              width: "100%",
+              padding: "10px",
+              marginTop: "5px",
+            }}
+          />
+        </div>
+
+        <div style={{ marginBottom: "15px" }}>
+          <label>Category</label>
+          <br />
+
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "10px",
+              marginTop: "5px",
+            }}
+          >
+            <option value="Clothing">Clothing</option>
+            <option value="Crochet">Crochet</option>
+          </select>
+        </div>
+
+        <div style={{ marginBottom: "15px" }}>
+          <label>Stock</label>
+          <br />
+
+          <input
+            type="number"
+            value={stock}
+            onChange={(e) => setStock(e.target.value)}
+            placeholder="Enter stock quantity"
+            required
+            min="0"
+            style={{
+              width: "100%",
+              padding: "10px",
+              marginTop: "5px",
+            }}
+          />
+        </div>
+
+        <div style={{ marginBottom: "20px" }}>
+          <label>Product Image</label>
+          <br />
+
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setImageFile(e.target.files[0])}
+            style={{
+              marginTop: "8px",
+            }}
+          />
+        </div>
+
+        <button type="submit">
+          {editingId ? "Update Product" : "Add Product"}
+        </button>
+
+        {editingId && (
+          <button
+            type="button"
+            onClick={clearForm}
+            style={{
+              marginLeft: "10px",
+              background: "#777",
+            }}
+          >
+            Cancel
+          </button>
+        )}
+      </form>
+
+      {/* Message */}
+
+      {message && (
+        <p
+          style={{
+            marginTop: "20px",
+            fontWeight: "bold",
+          }}
+        >
+          {message}
+        </p>
+      )}
+
+      {/* Products */}
+
+      <h2 style={{ marginTop: "50px" }}>All Products</h2>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns:
+            "repeat(auto-fit, minmax(250px, 1fr))",
+          gap: "20px",
+          marginTop: "20px",
+        }}
+      >
+        {products.length === 0 ? (
+          <p>No products available.</p>
+        ) : (
+          products.map((product) => (
+            <div
+              key={product.id}
+              style={{
+                background: "white",
+                padding: "20px",
+                borderRadius: "15px",
+                boxShadow: "0 5px 20px rgba(0,0,0,0.08)",
+              }}
+            >
+              {product.image_url && (
+                <img
+                  src={product.image_url}
+                  alt={product.name}
+                  style={{
+                    width: "100%",
+                    height: "200px",
+                    objectFit: "cover",
+                    borderRadius: "10px",
+                    marginBottom: "15px",
+                  }}
+                />
+              )}
+
+              <h3>{product.name}</h3>
+
+              <p>{product.description}</p>
+
+              <p>
+                <strong>Price:</strong> Rs. {product.price}
+              </p>
+
+              <p>
+                <strong>Category:</strong> {product.category}
+              </p>
+
+              <p>
+                <strong>Stock:</strong> {product.stock}
+              </p>
+
+              <button onClick={() => startEdit(product)}>
+                Edit
+              </button>
+
+              <button
+                onClick={() => deleteProduct(product.id)}
+                style={{
+                  marginLeft: "10px",
+                  background: "#b33",
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default Admin;
