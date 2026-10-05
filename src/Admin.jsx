@@ -3,6 +3,7 @@ import { supabase } from "./supabaseClient";
 
 function Admin() {
   const [products, setProducts] = useState([]);
+  const [orders, setOrders] = useState([]);
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -33,7 +34,9 @@ function Admin() {
 
     setUser(user);
     setLoading(false);
+
     fetchProducts();
+    fetchOrders();
   }
 
   async function fetchProducts() {
@@ -49,6 +52,21 @@ function Admin() {
     }
 
     setProducts(data || []);
+  }
+
+  async function fetchOrders() {
+    const { data, error } = await supabase
+      .from("orders")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Orders error:", error);
+      setMessage("❌ Orders load nahi huay.");
+      return;
+    }
+
+    setOrders(data || []);
   }
 
   async function uploadImage() {
@@ -198,6 +216,25 @@ function Admin() {
 
     clearForm();
     fetchProducts();
+  }
+
+  async function updateOrderStatus(id, newStatus) {
+    const { error } = await supabase
+      .from("orders")
+      .update({
+        status: newStatus,
+      })
+      .eq("id", id);
+
+    if (error) {
+      console.error("Order status error:", error);
+      setMessage("❌ Order status update nahi hua.");
+      return;
+    }
+
+    setMessage("✅ Order status updated!");
+
+    fetchOrders();
   }
 
   function clearForm() {
@@ -420,6 +457,82 @@ function Admin() {
         >
           {message}
         </p>
+      )}
+
+      {/* Orders */}
+
+      <h2 style={{ marginTop: "50px" }}>Customer Orders 📦</h2>
+
+      {orders.length === 0 ? (
+        <p>No orders available.</p>
+      ) : (
+        <div
+          style={{
+            display: "grid",
+            gap: "20px",
+            marginTop: "20px",
+          }}
+        >
+          {orders.map((order) => (
+            <div
+              key={order.id}
+              style={{
+                background: "white",
+                padding: "20px",
+                borderRadius: "15px",
+                boxShadow: "0 5px 20px rgba(0,0,0,0.08)",
+              }}
+            >
+              <h3>Order #{order.id}</h3>
+
+              <p>
+                <strong>Customer:</strong> {order.customer_name}
+              </p>
+
+              <p>
+                <strong>Phone:</strong> {order.phone}
+              </p>
+
+              <p>
+                <strong>Address:</strong> {order.address}
+              </p>
+
+              <p>
+                <strong>City:</strong> {order.city}
+              </p>
+
+              <p>
+                <strong>Total:</strong> Rs. {order.total}
+              </p>
+
+              <p>
+                <strong>Date:</strong>{" "}
+                {new Date(order.created_at).toLocaleString()}
+              </p>
+
+              <label>
+                <strong>Status:</strong>
+              </label>
+
+              <select
+                value={order.status}
+                onChange={(e) =>
+                  updateOrderStatus(order.id, e.target.value)
+                }
+                style={{
+                  marginLeft: "10px",
+                  padding: "8px",
+                }}
+              >
+                <option value="pending">Pending</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="shipped">Shipped</option>
+                <option value="delivered">Delivered</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+          ))}
+        </div>
       )}
 
       {/* Products */}
