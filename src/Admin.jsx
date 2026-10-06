@@ -4,6 +4,7 @@ import { supabase } from "./supabaseClient";
 function Admin() {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [orderItems, setOrderItems] = useState({});
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -67,6 +68,31 @@ function Admin() {
     }
 
     setOrders(data || []);
+
+    // Fetch all order items
+    const { data: items, error: itemsError } = await supabase
+      .from("order_items")
+      .select("*")
+      .order("id", { ascending: true });
+
+    if (itemsError) {
+      console.error("Order items error:", itemsError);
+      setMessage("❌ Order products load nahi huay.");
+      return;
+    }
+
+    // Group items by order_id
+    const groupedItems = {};
+
+    (items || []).forEach((item) => {
+      if (!groupedItems[item.order_id]) {
+        groupedItems[item.order_id] = [];
+      }
+
+      groupedItems[item.order_id].push(item);
+    });
+
+    setOrderItems(groupedItems);
   }
 
   async function uploadImage() {
@@ -510,26 +536,109 @@ function Admin() {
                 {new Date(order.created_at).toLocaleString()}
               </p>
 
-              <label>
-                <strong>Status:</strong>
-              </label>
+              {/* Ordered Products */}
 
-              <select
-                value={order.status}
-                onChange={(e) =>
-                  updateOrderStatus(order.id, e.target.value)
-                }
-                style={{
-                  marginLeft: "10px",
-                  padding: "8px",
-                }}
-              >
-                <option value="pending">Pending</option>
-                <option value="confirmed">Confirmed</option>
-                <option value="shipped">Shipped</option>
-                <option value="delivered">Delivered</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
+              <div style={{ marginTop: "20px" }}>
+                <h4>Ordered Products 🛍️</h4>
+
+                {orderItems[order.id]?.length > 0 ? (
+                  <div
+                    style={{
+                      display: "grid",
+                      gap: "15px",
+                      marginTop: "10px",
+                    }}
+                  >
+                    {orderItems[order.id].map((item) => (
+                      <div
+                        key={item.id}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "15px",
+                          padding: "12px",
+                          background: "#f8f8f8",
+                          borderRadius: "10px",
+                        }}
+                      >
+                        {item.image_url ? (
+                          <img
+                            src={item.image_url}
+                            alt={item.product_name}
+                            style={{
+                              width: "90px",
+                              height: "90px",
+                              objectFit: "cover",
+                              borderRadius: "8px",
+                            }}
+                          />
+                        ) : (
+                          <div
+                            style={{
+                              width: "90px",
+                              height: "90px",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              background: "#eee",
+                              borderRadius: "8px",
+                              fontSize: "30px",
+                            }}
+                          >
+                            🛍️
+                          </div>
+                        )}
+
+                        <div>
+                          <h4 style={{ margin: "0 0 8px 0" }}>
+                            {item.product_name}
+                          </h4>
+
+                          <p style={{ margin: "4px 0" }}>
+                            Price: Rs. {item.price}
+                          </p>
+
+                          <p style={{ margin: "4px 0" }}>
+                            Quantity: {item.quantity}
+                          </p>
+
+                          <p style={{ margin: "4px 0", fontWeight: "bold" }}>
+                            Subtotal: Rs.{" "}
+                            {Number(item.price) * item.quantity}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p>No product details available for this order.</p>
+                )}
+              </div>
+
+              {/* Order Status */}
+
+              <div style={{ marginTop: "20px" }}>
+                <label>
+                  <strong>Status:</strong>
+                </label>
+
+                <select
+                  value={order.status}
+                  onChange={(e) =>
+                    updateOrderStatus(order.id, e.target.value)
+                  }
+                  style={{
+                    marginLeft: "10px",
+                    padding: "8px",
+                  }}
+                >
+                  <option value="pending">Pending</option>
+                  <option value="confirmed">Confirmed</option>
+                  <option value="shipped">Shipped</option>
+                  <option value="delivered">Delivered</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
             </div>
           ))}
         </div>

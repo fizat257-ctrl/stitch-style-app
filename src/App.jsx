@@ -36,6 +36,7 @@ function App() {
       .from("products")
       .select("*")
       .order("id", { ascending: false });
+      console.log("PRODUCTS:"), data;
 
     if (error) {
       console.error("Products error:", error);
