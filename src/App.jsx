@@ -9,6 +9,8 @@ import MyOrders from "./MyOrders.jsx";
 function App() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+const [category, setCategory] = useState("All");
 
   const [cart, setCart] = useState(() => {
     const savedCart = localStorage.getItem("cart");
@@ -49,6 +51,21 @@ function App() {
     setProducts(data || []);
     setLoading(false);
   }
+  const categories = [
+  "All",
+  ...new Set(products.map((product) => product.category)),
+];
+
+const filteredProducts = products.filter((product) => {
+  const matchesSearch = product.name
+    .toLowerCase()
+    .includes(search.toLowerCase());
+
+  const matchesCategory =
+    category === "All" || product.category === category;
+
+  return matchesSearch && matchesCategory;
+});
 
   function addToCart(product) {
     const existingProduct = cart.find(
@@ -240,6 +257,45 @@ function App() {
         >
           Our Products
         </h2>
+        <div
+  style={{
+    display: "flex",
+    gap: "15px",
+    justifyContent: "center",
+    flexWrap: "wrap",
+    marginBottom: "30px",
+  }}
+>
+  <input
+    type="text"
+    placeholder="Search products..."
+    value={search}
+    onChange={(e) => setSearch(e.target.value)}
+    style={{
+      padding: "12px",
+      width: "280px",
+      border: "1px solid #ddd",
+      borderRadius: "8px",
+    }}
+  />
+
+  <select
+    value={category}
+    onChange={(e) => setCategory(e.target.value)}
+    style={{
+      padding: "12px",
+      width: "200px",
+      border: "1px solid #ddd",
+      borderRadius: "8px",
+    }}
+  >
+    {categories.map((cat) => (
+      <option key={cat} value={cat}>
+        {cat}
+      </option>
+    ))}
+  </select>
+</div>
 
         {loading ? (
           <p style={{ textAlign: "center" }}>
@@ -258,7 +314,7 @@ function App() {
               gap: "25px",
             }}
           >
-            {products.map((product) => (
+           {filteredProducts.map((product) => (
               <div
                 key={product.id}
                 style={{
