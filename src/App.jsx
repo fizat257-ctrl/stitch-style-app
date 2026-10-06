@@ -131,7 +131,7 @@ const filteredProducts = products.filter((product) => {
 
       <header
         style={{
-          padding: "20px 40px",
+          padding: "20px",
           background: "white",
           display: "flex",
           justifyContent: "space-between",
@@ -146,7 +146,7 @@ const filteredProducts = products.filter((product) => {
         <nav
           style={{
             display: "flex",
-            gap: "20px",
+            gap: "12px",
             alignItems: "center",
             flexWrap: "wrap",
           }}
@@ -310,7 +310,7 @@ const filteredProducts = products.filter((product) => {
             style={{
               display: "grid",
               gridTemplateColumns:
-                "repeat(auto-fit, minmax(250px, 1fr))",
+  "repeat(auto-fit, minmax(220px, 1fr))",
               gap: "25px",
             }}
           >
@@ -331,7 +331,7 @@ const filteredProducts = products.filter((product) => {
                     alt={product.name}
                     style={{
                       width: "100%",
-                      height: "280px",
+                      height: "240px",
                       objectFit: "cover",
                       borderRadius: "12px",
                     }}
