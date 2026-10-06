@@ -27,6 +27,14 @@ function Checkout() {
 
   async function handleSubmit(e) {
     e.preventDefault();
+    const stockError = cart.some(
+  (item) => item.quantity > item.stock
+);
+
+if (stockError) {
+  alert("❌ Some products are no longer available in the requested quantity. Please update your cart.");
+  return;
+}
 
     // Step 1: Save customer order
     const { data: order, error: orderError } = await supabase
@@ -73,6 +81,21 @@ function Checkout() {
 
       return;
     }
+    for (const item of cart) {
+  const { error: stockError } = await supabase.rpc(
+    "reduce_product_stock",
+    {
+      p_product_id: item.id,
+      p_quantity: item.quantity,
+    }
+  );
+
+  if (stockError) {
+    console.error("Stock update error:", stockError);
+    alert(`❌ Stock update failed: ${stockError.message}`);
+    return;
+  }
+}
 
     // Step 3: Show success message
     localStorage.setItem("customerPhone", customer.phone);

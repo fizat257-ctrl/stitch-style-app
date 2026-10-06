@@ -11,14 +11,21 @@ function Cart() {
   }, [cart]);
 
   function increaseQuantity(id) {
-    setCart(
-      cart.map((item) =>
-        item.id === id
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      )
-    );
+  const item = cart.find((item) => item.id === id);
+
+  if (item.quantity >= item.stock) {
+    alert("❌ Available stock se zyada quantity add nahi kar sakte.");
+    return;
   }
+
+  setCart(
+    cart.map((item) =>
+      item.id === id
+        ? { ...item, quantity: item.quantity + 1 }
+        : item
+    )
+  );
+}
 
   function decreaseQuantity(id) {
     setCart(
@@ -79,6 +86,7 @@ function Cart() {
               <div style={{ flex: 1 }}>
                 <h3>{item.name}</h3>
                 <p>Price: Rs. {item.price}</p>
+                <p>Available Stock: {item.stock}</p>
 
                 <div>
                   <button onClick={() => decreaseQuantity(item.id)}>

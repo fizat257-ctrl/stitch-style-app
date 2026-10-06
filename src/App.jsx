@@ -68,11 +68,19 @@ const filteredProducts = products.filter((product) => {
 });
 
   function addToCart(product) {
+    if (product.stock <= 0) {
+  alert("❌ This product is out of stock.");
+  return;
+}
     const existingProduct = cart.find(
       (item) => item.id === product.id
     );
 
     if (existingProduct) {
+      if (existingProduct.quantity >= product.stock) {
+  alert("❌ Available stock se zyada quantity add nahi kar sakte.");
+  return;
+}
       setCart(
         cart.map((item) =>
           item.id === product.id
