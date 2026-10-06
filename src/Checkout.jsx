@@ -81,6 +81,21 @@ if (stockError) {
 
       return;
     }
+    for (const item of cart) {
+  const { error: stockError } = await supabase.rpc(
+    "reduce_product_stock",
+    {
+      p_product_id: item.id,
+      p_quantity: item.quantity,
+    }
+  );
+
+  if (stockError) {
+    console.error("Stock update error:", stockError);
+    alert(`❌ Stock update failed: ${stockError.message}`);
+    return;
+  }
+}
 
     // Step 3: Show success message
     localStorage.setItem("customerPhone", customer.phone);
