@@ -5,11 +5,19 @@ function ProductDetails() {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const [reviews, setReviews] = useState([]);
+  const [reviewLoading, setReviewLoading] = useState(false);
+
+  const [customerName, setCustomerName] = useState("");
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+
   const params = new URLSearchParams(window.location.search);
   const productId = params.get("id");
 
   useEffect(() => {
     fetchProduct();
+    fetchReviews();
   }, []);
 
   async function fetchProduct() {
@@ -32,6 +40,25 @@ function ProductDetails() {
 
     setProduct(data);
     setLoading(false);
+  }
+
+  async function fetchReviews() {
+    if (!productId) {
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("reviews")
+      .select("*")
+      .eq("product_id", productId)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Reviews error:", error);
+      return;
+    }
+
+    setReviews(data || []);
   }
 
   function addToCart() {
@@ -109,6 +136,60 @@ function ProductDetails() {
 
     alert("❤️ Added to Wishlist!");
   }
+
+  async function submitReview(e) {
+    e.preventDefault();
+
+    if (!customerName.trim()) {
+      alert("Please enter your name.");
+      return;
+    }
+
+    if (!comment.trim()) {
+      alert("Please write a review.");
+      return;
+    }
+
+    setReviewLoading(true);
+
+    const { error } = await supabase
+      .from("reviews")
+      .insert([
+        {
+          product_id: Number(productId),
+          customer_name: customerName.trim(),
+          rating: Number(rating),
+          comment: comment.trim(),
+        },
+      ]);
+
+    if (error) {
+      console.error("Review submit error:", error);
+      alert(`❌ ${error.message}`);
+      setReviewLoading(false);
+      return;
+    }
+
+    alert("⭐ Review submitted successfully!");
+
+    setCustomerName("");
+    setRating(5);
+    setComment("");
+
+    await fetchReviews();
+
+    setReviewLoading(false);
+  }
+
+  const averageRating =
+    reviews.length > 0
+      ? (
+          reviews.reduce(
+            (sum, review) => sum + Number(review.rating),
+            0
+          ) / reviews.length
+        ).toFixed(1)
+      : "0.0";
 
   if (loading) {
     return (
@@ -261,7 +342,7 @@ function ProductDetails() {
               {product.description}
             </p>
 
-            {/* Wishlist Button */}
+            {/* Wishlist */}
 
             <button
               onClick={addToWishlist}
@@ -280,7 +361,7 @@ function ProductDetails() {
               ❤️ Add to Wishlist
             </button>
 
-            {/* Cart Button */}
+            {/* Cart */}
 
             <button
               onClick={addToCart}
@@ -302,6 +383,156 @@ function ProductDetails() {
                 ? "🛒 Add to Cart"
                 : "Out of Stock"}
             </button>
+          </div>
+        </div>
+
+        {/* Reviews Section */}
+
+        <div
+          style={{
+            marginTop: "40px",
+            background: "white",
+            padding: "25px",
+            borderRadius: "15px",
+            boxShadow:
+              "0 5px 20px rgba(0,0,0,0.08)",
+          }}
+        >
+          <h2>⭐ Customer Reviews</h2>
+
+          <p
+            style={{
+              fontSize: "20px",
+              fontWeight: "bold",
+            }}
+          >
+            {averageRating} / 5 ⭐
+          </p>
+
+          <p>
+            {reviews.length}{" "}
+            {reviews.length === 1
+              ? "review"
+              : "reviews"}
+          </p>
+
+          {/* Review Form */}
+
+          <form onSubmit={submitReview}>
+            <input
+              type="text"
+              placeholder="Your name"
+              value={customerName}
+              onChange={(e) =>
+                setCustomerName(e.target.value)
+              }
+              style={{
+                width: "100%",
+                padding: "12px",
+                marginBottom: "12px",
+                border: "1px solid #ddd",
+                borderRadius: "8px",
+                boxSizing: "border-box",
+              }}
+            />
+
+            <select
+              value={rating}
+              onChange={(e) =>
+                setRating(Number(e.target.value))
+              }
+              style={{
+                width: "100%",
+                padding: "12px",
+                marginBottom: "12px",
+                border: "1px solid #ddd",
+                borderRadius: "8px",
+              }}
+            >
+              <option value={5}>⭐⭐⭐⭐⭐ 5 Stars</option>
+              <option value={4}>⭐⭐⭐⭐ 4 Stars</option>
+              <option value={3}>⭐⭐⭐ 3 Stars</option>
+              <option value={2}>⭐⭐ 2 Stars</option>
+              <option value={1}>⭐ 1 Star</option>
+            </select>
+
+            <textarea
+              placeholder="Write your review..."
+              value={comment}
+              onChange={(e) =>
+                setComment(e.target.value)
+              }
+              rows="5"
+              style={{
+                width: "100%",
+                padding: "12px",
+                marginBottom: "12px",
+                border: "1px solid #ddd",
+                borderRadius: "8px",
+                boxSizing: "border-box",
+                resize: "vertical",
+              }}
+            />
+
+            <button
+              type="submit"
+              disabled={reviewLoading}
+              style={{
+                width: "100%",
+                padding: "13px",
+                border: "none",
+                borderRadius: "8px",
+                fontWeight: "bold",
+                cursor: "pointer",
+              }}
+            >
+              {reviewLoading
+                ? "Submitting..."
+                : "⭐ Submit Review"}
+            </button>
+          </form>
+
+          {/* Existing Reviews */}
+
+          <div style={{ marginTop: "30px" }}>
+            {reviews.length === 0 ? (
+              <p>
+                No reviews yet. Be the first to review
+                this product! ⭐
+              </p>
+            ) : (
+              reviews.map((review) => (
+                <div
+                  key={review.id}
+                  style={{
+                    padding: "15px 0",
+                    borderBottom:
+                      "1px solid #eee",
+                  }}
+                >
+                  <strong>
+                    {review.customer_name}
+                  </strong>
+
+                  <p
+                    style={{
+                      margin: "5px 0",
+                    }}
+                  >
+                    {"⭐".repeat(review.rating)}
+                  </p>
+
+                  <p
+                    style={{
+                      color: "#555",
+                      lineHeight: "1.5",
+                    }}
+                  >
+                    {review.comment}
+                  </p>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
