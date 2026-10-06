@@ -6,6 +6,7 @@ function Admin() {
   const [orders, setOrders] = useState([]);
   const [orderItems, setOrderItems] = useState({});
   const [reviews, setReviews] = useState([]);
+  const [productImages, setProductImages] = useState([]);
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -40,6 +41,7 @@ function Admin() {
     fetchProducts();
     fetchOrders();
     fetchReviews();
+    fetchProductImages();
   }
 
   async function fetchProducts() {
@@ -133,6 +135,91 @@ async function deleteReview(id) {
   alert("✅ Review deleted successfully!");
 
   fetchReviews();
+}
+async function fetchProductImages() {
+  const { data, error } = await supabase
+    .from("product_images")
+    .select("*")
+    .order("id", { ascending: false });
+
+  if (error) {
+    console.error("Product images error:", error);
+    return;
+  }
+
+  setProductImages(data || []);
+}
+async function uploadProductGalleryImage(productId, file) {
+  if (!file) return;
+
+  const fileName = `${Date.now()}-${file.name}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("products")
+    .upload(fileName, file);
+
+  if (uploadError) {
+    console.error("Gallery image upload error:", uploadError);
+    alert(`❌ ${uploadError.message}`);
+    return;
+  }
+
+  const { data: publicUrlData } = supabase.storage
+    .from("products")
+    .getPublicUrl(fileName);
+
+  const { error: insertError } = await supabase
+    .from("product_images")
+    .insert([
+      {
+        product_id: productId,
+        image_url: publicUrlData.publicUrl,
+      },
+    ]);
+
+  if (insertError) {
+    console.error("Gallery image save error:", insertError);
+    alert(`❌ ${insertError.message}`);
+    return;
+  }
+
+  alert("✅ Product image added successfully!");
+
+  fetchProductImages();
+}
+async function deleteProductGalleryImage(id, imageUrl) {
+  const confirmDelete = window.confirm(
+    "Are you sure you want to delete this image?"
+  );
+
+  if (!confirmDelete) {
+    return;
+  }
+
+  const fileName = imageUrl.split("/").pop();
+
+  const { error: storageError } = await supabase.storage
+    .from("products")
+    .remove([fileName]);
+
+  if (storageError) {
+    console.error("Storage delete error:", storageError);
+  }
+
+  const { error } = await supabase
+    .from("product_images")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    console.error("Database delete error:", error);
+    alert(`❌ ${error.message}`);
+    return;
+  }
+
+  alert("✅ Image deleted successfully!");
+
+  fetchProductImages();
 }
 
   async function uploadImage() {
@@ -842,6 +929,62 @@ async function deleteReview(id) {
               )}
 
               <h3>{product.name}</h3>
+              <input
+  type="file"
+  accept="image/*"
+  onChange={(e) =>
+    uploadProductGalleryImage(
+      product.id,
+      e.target.files[0]
+    )
+  }
+/>
+<div
+  style={{
+    display: "flex",
+    gap: "10px",
+    flexWrap: "wrap",
+    marginTop: "10px",
+  }}
+>
+  {productImages
+  .filter((image) => image.product_id === product.id)
+  .map((image) => (
+    <div key={image.id}>
+      <img
+        src={image.image_url}
+        alt={product.name}
+        style={{
+          width: "80px",
+          height: "80px",
+          objectFit: "cover",
+          borderRadius: "8px",
+        }}
+      />
+
+      <button
+        onClick={() =>
+          deleteProductGalleryImage(
+            image.id,
+            image.image_url
+          )
+        }
+        style={{
+          display: "block",
+          marginTop: "5px",
+          padding: "5px 8px",
+          background: "#b33",
+          color: "white",
+          border: "none",
+          borderRadius: "5px",
+          cursor: "pointer",
+        }}
+      >
+        🗑️ Delete
+      </button>
+    </div>
+  ))}
+</div>
 
               <p>{product.description}</p>
 

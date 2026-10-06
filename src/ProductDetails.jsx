@@ -6,6 +6,8 @@ function ProductDetails() {
   const [loading, setLoading] = useState(true);
 
   const [reviews, setReviews] = useState([]);
+  const [productImages, setProductImages] = useState([]);
+  const [selectedImage, setSelectedImage] = useState("");
   const [reviewLoading, setReviewLoading] = useState(false);
 
   const [customerName, setCustomerName] = useState("");
@@ -18,7 +20,26 @@ function ProductDetails() {
   useEffect(() => {
     fetchProduct();
     fetchReviews();
+    fetchProductImages();
   }, []);
+  async function fetchProductImages() {
+  if (!productId) {
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from("product_images")
+    .select("*")
+    .eq("product_id", productId)
+    .order("id", { ascending: false });
+
+  if (error) {
+    console.error("Product images error:", error);
+    return;
+  }
+
+  setProductImages(data || []);
+}
 
   async function fetchProduct() {
     if (!productId) {
@@ -39,6 +60,7 @@ function ProductDetails() {
     }
 
     setProduct(data);
+    setSelectedImage(data.image_url || "");
     setLoading(false);
   }
 
@@ -270,8 +292,9 @@ function ProductDetails() {
           <div>
             {product.image_url ? (
               <img
-                src={product.image_url}
+                src={selectedImage || product.image_url}
                 alt={product.name}
+                onClick={() => setSelectedImage(image.image_url)}
                 style={{
                   width: "100%",
                   height: "450px",
@@ -295,6 +318,32 @@ function ProductDetails() {
               </div>
             )}
           </div>
+          {productImages.length > 0 && (
+  <div
+    style={{
+      display: "flex",
+      gap: "10px",
+      flexWrap: "wrap",
+      marginTop: "15px",
+    }}
+  >
+    {productImages.map((image) => (
+      <img
+        key={image.id}
+        src={image.image_url}
+        alt={product.name}
+        style={{
+          width: "80px",
+          height: "80px",
+          objectFit: "cover",
+          borderRadius: "8px",
+          border: "1px solid #ddd",
+          cursor: "pointer",
+        }}
+      />
+    ))}
+  </div>
+)}
 
           {/* Product Information */}
 
