@@ -4,6 +4,7 @@ import { supabase } from "./supabaseClient";
 function MyOrders() {
   const [orders, setOrders] = useState([]);
   const [message, setMessage] = useState("");
+  const [orderItems, setOrderItems] = useState({});
 
   useEffect(() => {
     fetchOrders();
@@ -30,6 +31,30 @@ function MyOrders() {
     }
 
     setOrders(data || []);
+    const { data: items, error: itemsError } = await supabase
+  .from("order_items")
+  .select("*")
+  .in(
+    "order_id",
+    (data || []).map((order) => order.id)
+  );
+
+if (itemsError) {
+  console.error(itemsError);
+  return;
+}
+
+const groupedItems = {};
+
+(items || []).forEach((item) => {
+  if (!groupedItems[item.order_id]) {
+    groupedItems[item.order_id] = [];
+  }
+
+  groupedItems[item.order_id].push(item);
+});
+
+setOrderItems(groupedItems);
   }
 
   return (
@@ -75,6 +100,74 @@ function MyOrders() {
             <strong>Order Date:</strong>{" "}
             {new Date(order.created_at).toLocaleString()}
           </p>
+          <h4>Ordered Products 🛍️</h4>
+
+{orderItems[order.id]?.length > 0 ? (
+  <div style={{ display: "grid", gap: "15px" }}>
+    {orderItems[order.id].map((item) => (
+      <div
+        key={item.id}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "15px",
+          padding: "12px",
+          background: "#f8f8f8",
+          borderRadius: "10px",
+        }}
+      >
+        {item.image_url ? (
+          <img
+            src={item.image_url}
+            alt={item.product_name}
+            style={{
+              width: "90px",
+              height: "90px",
+              objectFit: "cover",
+              borderRadius: "8px",
+            }}
+          />
+        ) : (
+          <div
+            style={{
+              width: "90px",
+              height: "90px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "#eee",
+              borderRadius: "8px",
+              fontSize: "30px",
+            }}
+          >
+            🛍️
+          </div>
+        )}
+
+        <div>
+          <h4 style={{ margin: "0 0 8px 0" }}>
+            {item.product_name}
+          </h4>
+
+          <p style={{ margin: "4px 0" }}>
+            Price: Rs. {item.price}
+          </p>
+
+          <p style={{ margin: "4px 0" }}>
+            Quantity: {item.quantity}
+          </p>
+
+          <p style={{ margin: "4px 0", fontWeight: "bold" }}>
+            Subtotal: Rs.{" "}
+            {Number(item.price) * item.quantity}
+          </p>
+        </div>
+      </div>
+    ))}
+  </div>
+) : (
+  <p>No product details available.</p>
+)}
         </div>
       ))}
     </div>
