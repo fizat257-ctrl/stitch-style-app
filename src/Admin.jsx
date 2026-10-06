@@ -5,6 +5,7 @@ function Admin() {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [orderItems, setOrderItems] = useState({});
+  const [reviews, setReviews] = useState([]);
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -38,6 +39,7 @@ function Admin() {
 
     fetchProducts();
     fetchOrders();
+    fetchReviews();
   }
 
   async function fetchProducts() {
@@ -94,6 +96,44 @@ function Admin() {
 
     setOrderItems(groupedItems);
   }
+  async function fetchReviews() {
+  const { data, error } = await supabase
+    .from("reviews")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Reviews error:", error);
+    setMessage("❌ Reviews load nahi huay.");
+    return;
+  }
+
+  setReviews(data || []);
+}
+async function deleteReview(id) {
+  const confirmDelete = window.confirm(
+    "Are you sure you want to delete this review?"
+  );
+
+  if (!confirmDelete) {
+    return;
+  }
+
+  const { error } = await supabase
+    .from("reviews")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    console.error("Delete review error:", error);
+    alert(`❌ ${error.message}`);
+    return;
+  }
+
+  alert("✅ Review deleted successfully!");
+
+  fetchReviews();
+}
 
   async function uploadImage() {
     if (!imageFile) {
@@ -701,6 +741,65 @@ function Admin() {
           ))}
         </div>
       )}
+      <div
+  style={{
+    marginTop: "50px",
+    background: "white",
+    padding: "20px",
+    borderRadius: "12px",
+    boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
+  }}
+>
+  <h2>Customer Reviews ⭐</h2>
+
+  {reviews.length === 0 ? (
+    <p>No customer reviews yet.</p>
+  ) : (
+    reviews.map((review) => (
+      <div
+        key={review.id}
+        style={{
+          padding: "15px",
+          marginTop: "15px",
+          border: "1px solid #eee",
+          borderRadius: "10px",
+          background: "#fafafa",
+        }}
+      >
+        <h3>{review.customer_name}</h3>
+
+        <p>
+          {"⭐".repeat(Number(review.rating))}
+        </p>
+
+        <p>{review.comment}</p>
+
+        <p
+          style={{
+            fontSize: "13px",
+            color: "#888",
+          }}
+        >
+          {new Date(review.created_at).toLocaleDateString()}
+        </p>
+
+        <button
+          onClick={() => deleteReview(review.id)}
+          style={{
+            padding: "8px 15px",
+            background: "#b33",
+            color: "white",
+            border: "none",
+            borderRadius: "6px",
+            cursor: "pointer",
+          }}
+        >
+          🗑️ Delete Review
+        </button>
+      </div>
+    ))
+  )}
+</div>
 
       {/* Products */}
 
