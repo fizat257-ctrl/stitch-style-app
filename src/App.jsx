@@ -5,17 +5,31 @@ import AdminLogin from "./AdminLogin";
 import Cart from "./Cart";
 import Checkout from "./Checkout";
 import MyOrders from "./MyOrders.jsx";
+import Wishlist from "./Wishlist.jsx";
 
 function App() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-const [category, setCategory] = useState("All");
+  const [category, setCategory] = useState("All");
 
   const [cart, setCart] = useState(() => {
     const savedCart = localStorage.getItem("cart");
     return savedCart ? JSON.parse(savedCart) : [];
   });
+
+  const [wishlist, setWishlist] = useState(() => {
+    const savedWishlist = localStorage.getItem("wishlist");
+    return savedWishlist ? JSON.parse(savedWishlist) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem("cart", JSON.stringify(cart));
+  }, [cart]);
+
+  useEffect(() => {
+    localStorage.setItem("wishlist", JSON.stringify(wishlist));
+  }, [wishlist]);
 
   const path = window.location.pathname;
 
@@ -24,23 +38,35 @@ const [category, setCategory] = useState("All");
   const isCart = path === "/cart";
   const isCheckout = path === "/checkout";
   const isMyOrders = path === "/my-orders";
+  const isWishlist = path === "/wishlist";
 
   useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cart));
-  }, [cart]);
-
-  useEffect(() => {
-    if (!isAdmin && !isAdminLogin && !isCart && !isCheckout) {
+    if (
+      !isAdmin &&
+      !isAdminLogin &&
+      !isCart &&
+      !isCheckout &&
+      !isMyOrders &&
+      !isWishlist
+    ) {
       fetchProducts();
     }
-  }, [isAdmin, isAdminLogin, isCart, isCheckout]);
+  }, [
+    isAdmin,
+    isAdminLogin,
+    isCart,
+    isCheckout,
+    isMyOrders,
+    isWishlist,
+  ]);
 
   async function fetchProducts() {
     const { data, error } = await supabase
       .from("products")
       .select("*")
       .order("id", { ascending: false });
-      console.log("PRODUCTS:"), data;
+
+    console.log("PRODUCTS:", data);
 
     if (error) {
       console.error("Products error:", error);
@@ -51,36 +77,41 @@ const [category, setCategory] = useState("All");
     setProducts(data || []);
     setLoading(false);
   }
+
   const categories = [
-  "All",
-  ...new Set(products.map((product) => product.category)),
-];
+    "All",
+    ...new Set(products.map((product) => product.category)),
+  ];
 
-const filteredProducts = products.filter((product) => {
-  const matchesSearch = product.name
-    .toLowerCase()
-    .includes(search.toLowerCase());
+  const filteredProducts = products.filter((product) => {
+    const matchesSearch = product.name
+      .toLowerCase()
+      .includes(search.toLowerCase());
 
-  const matchesCategory =
-    category === "All" || product.category === category;
+    const matchesCategory =
+      category === "All" || product.category === category;
 
-  return matchesSearch && matchesCategory;
-});
+    return matchesSearch && matchesCategory;
+  });
 
   function addToCart(product) {
     if (product.stock <= 0) {
-  alert("❌ This product is out of stock.");
-  return;
-}
+      alert("❌ This product is out of stock.");
+      return;
+    }
+
     const existingProduct = cart.find(
       (item) => item.id === product.id
     );
 
     if (existingProduct) {
       if (existingProduct.quantity >= product.stock) {
-  alert("❌ Available stock se zyada quantity add nahi kar sakte.");
-  return;
-}
+        alert(
+          "❌ Available stock se zyada quantity add nahi kar sakte."
+        );
+        return;
+      }
+
       setCart(
         cart.map((item) =>
           item.id === product.id
@@ -104,6 +135,21 @@ const filteredProducts = products.filter((product) => {
     alert(`${product.name} added to cart!`);
   }
 
+  function addToWishlist(product) {
+    const alreadyAdded = wishlist.some(
+      (item) => item.id === product.id
+    );
+
+    if (alreadyAdded) {
+      alert("❤️ Already in Wishlist");
+      return;
+    }
+
+    setWishlist([...wishlist, product]);
+
+    alert("❤️ Added to Wishlist!");
+  }
+
   // Admin Login
   if (isAdminLogin) {
     return <AdminLogin />;
@@ -123,9 +169,16 @@ const filteredProducts = products.filter((product) => {
   if (isCheckout) {
     return <Checkout />;
   }
+
+  // My Orders Page
   if (isMyOrders) {
-  return <MyOrders />;
-}
+    return <MyOrders />;
+  }
+
+  // Wishlist Page
+  if (isWishlist) {
+    return <Wishlist />;
+  }
 
   return (
     <div
@@ -180,6 +233,17 @@ const filteredProducts = products.filter((product) => {
           </a>
 
           <a
+            href="/wishlist"
+            style={{
+              textDecoration: "none",
+              color: "#222",
+              fontWeight: "bold",
+            }}
+          >
+            ❤️ Wishlist ({wishlist.length})
+          </a>
+
+          <a
             href="/cart"
             style={{
               textDecoration: "none",
@@ -195,16 +259,17 @@ const filteredProducts = products.filter((product) => {
             )
           </a>
 
-<a
-  href="/my-orders"
-  style={{
-    textDecoration: "none",
-    color: "#222",
-    fontWeight: "bold",
-  }}
->
-  📦 My Orders
-</a>
+          <a
+            href="/my-orders"
+            style={{
+              textDecoration: "none",
+              color: "#222",
+              fontWeight: "bold",
+            }}
+          >
+            📦 My Orders
+          </a>
+
           <a
             href="/admin-login"
             style={{
@@ -265,45 +330,48 @@ const filteredProducts = products.filter((product) => {
         >
           Our Products
         </h2>
-        <div
-  style={{
-    display: "flex",
-    gap: "15px",
-    justifyContent: "center",
-    flexWrap: "wrap",
-    marginBottom: "30px",
-  }}
->
-  <input
-    type="text"
-    placeholder="Search products..."
-    value={search}
-    onChange={(e) => setSearch(e.target.value)}
-    style={{
-      padding: "12px",
-      width: "280px",
-      border: "1px solid #ddd",
-      borderRadius: "8px",
-    }}
-  />
 
-  <select
-    value={category}
-    onChange={(e) => setCategory(e.target.value)}
-    style={{
-      padding: "12px",
-      width: "200px",
-      border: "1px solid #ddd",
-      borderRadius: "8px",
-    }}
-  >
-    {categories.map((cat) => (
-      <option key={cat} value={cat}>
-        {cat}
-      </option>
-    ))}
-  </select>
-</div>
+        {/* Search and Category */}
+
+        <div
+          style={{
+            display: "flex",
+            gap: "15px",
+            justifyContent: "center",
+            flexWrap: "wrap",
+            marginBottom: "30px",
+          }}
+        >
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{
+              padding: "12px",
+              width: "280px",
+              border: "1px solid #ddd",
+              borderRadius: "8px",
+            }}
+          />
+
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            style={{
+              padding: "12px",
+              width: "200px",
+              border: "1px solid #ddd",
+              borderRadius: "8px",
+            }}
+          >
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
+        </div>
 
         {loading ? (
           <p style={{ textAlign: "center" }}>
@@ -313,16 +381,20 @@ const filteredProducts = products.filter((product) => {
           <p style={{ textAlign: "center" }}>
             No products available.
           </p>
+        ) : filteredProducts.length === 0 ? (
+          <p style={{ textAlign: "center" }}>
+            No matching products found.
+          </p>
         ) : (
           <div
             style={{
               display: "grid",
               gridTemplateColumns:
-  "repeat(auto-fit, minmax(220px, 1fr))",
+                "repeat(auto-fit, minmax(220px, 1fr))",
               gap: "25px",
             }}
           >
-           {filteredProducts.map((product) => (
+            {filteredProducts.map((product) => (
               <div
                 key={product.id}
                 style={{
@@ -380,6 +452,24 @@ const filteredProducts = products.filter((product) => {
                     : "Out of Stock"}
                 </p>
 
+                {/* Wishlist */}
+
+                <button
+                  onClick={() => addToWishlist(product)}
+                  style={{
+                    width: "100%",
+                    padding: "10px",
+                    marginBottom: "8px",
+                    background: "#fff",
+                    color: "#b33",
+                    border: "1px solid #b33",
+                    borderRadius: "8px",
+                    cursor: "pointer",
+                  }}
+                >
+                  ❤️ Add to Wishlist
+                </button>
+
                 {/* Add to Cart */}
 
                 <button
@@ -407,6 +497,7 @@ const filteredProducts = products.filter((product) => {
           </div>
         )}
       </section>
+
       {/* WhatsApp Button */}
 
       <a
@@ -433,12 +524,6 @@ const filteredProducts = products.filter((product) => {
       >
         💬
       </a>
-
-      {/* Footer */}
-
-      <footer>
-        ...
-      </footer>
 
       {/* Footer */}
 

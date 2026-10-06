@@ -80,9 +80,44 @@ setOrderItems(groupedItems);
         >
           <h3>Order #{order.id}</h3>
 
-          <p>
-            <strong>Status:</strong> {order.status}
-          </p>
+         <p>
+  <strong>Status:</strong>{" "}
+  <span
+    style={{
+      display: "inline-block",
+      padding: "6px 12px",
+      borderRadius: "20px",
+      fontWeight: "bold",
+      textTransform: "capitalize",
+      background:
+        order.status === "pending"
+          ? "#fff3cd"
+          : order.status === "confirmed"
+          ? "#cfe2ff"
+          : order.status === "shipped"
+          ? "#d1ecf1"
+          : order.status === "delivered"
+          ? "#d4edda"
+          : order.status === "cancelled"
+          ? "#f8d7da"
+          : "#eee",
+      color:
+        order.status === "pending"
+          ? "#856404"
+          : order.status === "confirmed"
+          ? "#084298"
+          : order.status === "shipped"
+          ? "#0c5460"
+          : order.status === "delivered"
+          ? "#155724"
+          : order.status === "cancelled"
+          ? "#721c24"
+          : "#333",
+    }}
+  >
+    {order.status}
+  </span>
+</p>
 
           <p>
             <strong>Total:</strong> Rs. {order.total}
