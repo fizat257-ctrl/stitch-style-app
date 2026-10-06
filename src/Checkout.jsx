@@ -75,6 +75,7 @@ function Checkout() {
     }
 
     // Step 3: Show success message
+    localStorage.setItem("customerPhone", customer.phone);
     setOrderPlaced(true);
 
     // Step 4: Clear cart

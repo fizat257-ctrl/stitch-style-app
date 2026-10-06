@@ -4,6 +4,7 @@ import Admin from "./Admin";
 import AdminLogin from "./AdminLogin";
 import Cart from "./Cart";
 import Checkout from "./Checkout";
+import MyOrders from "./MyOrders.jsx";
 
 function App() {
   const [products, setProducts] = useState([]);
@@ -20,6 +21,7 @@ function App() {
   const isAdminLogin = path === "/admin-login";
   const isCart = path === "/cart";
   const isCheckout = path === "/checkout";
+  const isMyOrders = path === "/my-orders";
 
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(cart));
@@ -96,6 +98,9 @@ function App() {
   if (isCheckout) {
     return <Checkout />;
   }
+  if (isMyOrders) {
+  return <MyOrders />;
+}
 
   return (
     <div
@@ -165,6 +170,16 @@ function App() {
             )
           </a>
 
+<a
+  href="/my-orders"
+  style={{
+    textDecoration: "none",
+    color: "#222",
+    fontWeight: "bold",
+  }}
+>
+  📦 My Orders
+</a>
           <a
             href="/admin-login"
             style={{
