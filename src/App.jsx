@@ -6,6 +6,7 @@ import Cart from "./Cart";
 import Checkout from "./Checkout";
 import MyOrders from "./MyOrders.jsx";
 import Wishlist from "./Wishlist.jsx";
+import ProductDetails from "./ProductDetails.jsx";
 
 function App() {
   const [products, setProducts] = useState([]);
@@ -39,6 +40,7 @@ function App() {
   const isCheckout = path === "/checkout";
   const isMyOrders = path === "/my-orders";
   const isWishlist = path === "/wishlist";
+  const isProductDetails = path === "/product";
 
   useEffect(() => {
     if (
@@ -47,7 +49,8 @@ function App() {
       !isCart &&
       !isCheckout &&
       !isMyOrders &&
-      !isWishlist
+      !isWishlist &&
+      !isProductDetails
     ) {
       fetchProducts();
     }
@@ -58,6 +61,7 @@ function App() {
     isCheckout,
     isMyOrders,
     isWishlist,
+    isProductDetails,
   ]);
 
   async function fetchProducts() {
@@ -178,6 +182,11 @@ function App() {
   // Wishlist Page
   if (isWishlist) {
     return <Wishlist />;
+  }
+
+  // Product Details Page
+  if (isProductDetails) {
+    return <ProductDetails />;
   }
 
   return (
@@ -405,19 +414,33 @@ function App() {
                     "0 5px 20px rgba(0,0,0,0.08)",
                 }}
               >
+                {/* Product Image */}
+
                 {product.image_url ? (
-                  <img
-                    src={product.image_url}
-                    alt={product.name}
+                  <div
+                    onClick={() =>
+                      (window.location.href = `/product?id=${product.id}`)
+                    }
                     style={{
-                      width: "100%",
-                      height: "240px",
-                      objectFit: "cover",
-                      borderRadius: "12px",
+                      cursor: "pointer",
                     }}
-                  />
+                  >
+                    <img
+                      src={product.image_url}
+                      alt={product.name}
+                      style={{
+                        width: "100%",
+                        height: "240px",
+                        objectFit: "cover",
+                        borderRadius: "12px",
+                      }}
+                    />
+                  </div>
                 ) : (
                   <div
+                    onClick={() =>
+                      (window.location.href = `/product?id=${product.id}`)
+                    }
                     style={{
                       height: "280px",
                       display: "flex",
@@ -426,25 +449,45 @@ function App() {
                       background: "#f1ece8",
                       borderRadius: "12px",
                       fontSize: "50px",
+                      cursor: "pointer",
                     }}
                   >
                     🛍️
                   </div>
                 )}
 
-                <h3 style={{ marginTop: "15px" }}>
+                {/* Product Name */}
+
+                <h3
+                  style={{
+                    marginTop: "15px",
+                    cursor: "pointer",
+                    color: "#8b5e3c",
+                  }}
+                  onClick={() =>
+                    (window.location.href = `/product?id=${product.id}`)
+                  }
+                >
                   {product.name}
                 </h3>
 
+                {/* Description */}
+
                 <p>{product.description}</p>
+
+                {/* Price */}
 
                 <p>
                   <strong>Rs. {product.price}</strong>
                 </p>
 
+                {/* Category */}
+
                 <p>
                   Category: {product.category}
                 </p>
+
+                {/* Stock */}
 
                 <p>
                   {product.stock > 0

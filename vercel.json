@@ -23,6 +23,10 @@
     {
       "source": "/wishlist",
       "destination": "/"
+    },
+    {
+      "source": "/product",
+      "destination": "/"
     }
   ]
 }
