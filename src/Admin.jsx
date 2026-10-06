@@ -263,6 +263,44 @@ function Admin() {
     fetchOrders();
   }
 
+  async function deleteOrder(id) {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this order?"
+    );
+
+    if (!confirmDelete) {
+      return;
+    }
+
+    // Delete order items first
+    const { error: itemsError } = await supabase
+      .from("order_items")
+      .delete()
+      .eq("order_id", id);
+
+    if (itemsError) {
+      console.error("Order items delete error:", itemsError);
+      setMessage("❌ Order products delete nahi huay.");
+      return;
+    }
+
+    // Delete the order
+    const { error: orderError } = await supabase
+      .from("orders")
+      .delete()
+      .eq("id", id);
+
+    if (orderError) {
+      console.error("Order delete error:", orderError);
+      setMessage("❌ Order delete nahi hua.");
+      return;
+    }
+
+    setMessage("✅ Order deleted successfully!");
+
+    fetchOrders();
+  }
+
   function clearForm() {
     setEditingId(null);
     setName("");
@@ -602,7 +640,12 @@ function Admin() {
                             Quantity: {item.quantity}
                           </p>
 
-                          <p style={{ margin: "4px 0", fontWeight: "bold" }}>
+                          <p
+                            style={{
+                              margin: "4px 0",
+                              fontWeight: "bold",
+                            }}
+                          >
                             Subtotal: Rs.{" "}
                             {Number(item.price) * item.quantity}
                           </p>
@@ -638,6 +681,21 @@ function Admin() {
                   <option value="delivered">Delivered</option>
                   <option value="cancelled">Cancelled</option>
                 </select>
+
+                <button
+                  onClick={() => deleteOrder(order.id)}
+                  style={{
+                    marginLeft: "10px",
+                    padding: "8px 12px",
+                    background: "#b33",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                  }}
+                >
+                  🗑️ Delete Order
+                </button>
               </div>
             </div>
           ))}
