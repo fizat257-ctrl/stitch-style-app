@@ -343,6 +343,38 @@ function App() {
           </div>
         )}
       </section>
+      {/* WhatsApp Button */}
+
+      <a
+        href="https://wa.me/923043093334?text=Hello%20Stitch%20%26%20Style%2C%20I%20want%20to%20ask%20about%20your%20products."
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          position: "fixed",
+          bottom: "20px",
+          right: "20px",
+          background: "#25D366",
+          color: "white",
+          width: "55px",
+          height: "55px",
+          borderRadius: "50%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: "28px",
+          textDecoration: "none",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
+          zIndex: 1000,
+        }}
+      >
+        💬
+      </a>
+
+      {/* Footer */}
+
+      <footer>
+        ...
+      </footer>
 
       {/* Footer */}
 
