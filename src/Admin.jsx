@@ -155,23 +155,51 @@ async function deleteReview(id) {
   fetchReviews();
 }
 async function updateStitchingStatus(id, status) {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("custom_stitching_requests")
-    .update({ status })
-    .eq("id", id);
+    .update({ status: status })
+    .eq("id", id)
+    .select();
 
   if (error) {
-    console.error("Stitching status error:", error);
-    alert("Status update failed");
+    console.error(
+      "Stitching status error:",
+      error
+    );
+
+    alert(
+      "Status update failed: " +
+        error.message
+    );
+
+    return;
+  }
+
+  console.log(
+    "Updated stitching request:",
+    data
+  );
+
+  if (!data || data.length === 0) {
+    alert(
+      "Status update nahi hua. Database row update nahi hui."
+    );
     return;
   }
 
   setStitchingRequests((prev) =>
     prev.map((request) =>
       request.id === id
-        ? { ...request, status }
+        ? {
+            ...request,
+            status: data[0].status,
+          }
         : request
     )
+  );
+
+  alert(
+    `✅ Status changed to ${data[0].status}`
   );
 }
 async function fetchProductImages() {

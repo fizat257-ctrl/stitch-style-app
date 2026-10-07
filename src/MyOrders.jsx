@@ -132,10 +132,15 @@ function MyOrders() {
     }
 
     // Match phone numbers after fetching requests
-    const matchedRequests = (stitchingData || []).filter(
-      (request) =>
-        normalizePhone(request.phone) === phone
-    );
+   const matchedRequests = (stitchingData || []).filter(
+  (request) =>
+    normalizePhone(request.phone) === phone
+);
+
+console.log(
+  "Latest stitching requests:",
+  matchedRequests
+);
 
     console.log(
       "All stitching requests:",
