@@ -337,8 +337,7 @@ function App() {
             lineHeight: "1.6",
           }}
         >
-          Discover beautiful women's clothing and handmade crochet
-          products, all in one place.
+          Discover beautiful fashion, jewelry, makeup, and more — all in one place.
         </p>
       </section>
 
