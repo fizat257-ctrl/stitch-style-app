@@ -107,6 +107,7 @@ function CustomStitching() {
     setLoading(true);
 
     let referenceImageUrl = "";
+    localStorage.setItem("customerPhone", formData.phone);
 
     // Upload reference image
     if (referenceImage) {
