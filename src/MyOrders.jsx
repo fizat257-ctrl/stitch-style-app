@@ -405,6 +405,15 @@ console.log(
                 {request.product_name ||
                   "Custom Stitching"}
               </h3>
+              <p>
+  <strong>Customer Name:</strong>{" "}
+  {request.customer_name || "N/A"}
+</p>
+
+<p>
+  <strong>Phone:</strong>{" "}
+  {request.phone || "N/A"}
+</p>
 
               <p>
                 <strong>Customer:</strong>{" "}
