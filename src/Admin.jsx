@@ -749,11 +749,16 @@ async function deleteProductGalleryImage(id, imageUrl) {
               <p>
                 <strong>Total:</strong> Rs. {order.total}
               </p>
+              <p>
+  <strong>Payment Method:</strong>{" "}
+  {order.payment_method}
+</p>
 
               <p>
                 <strong>Date:</strong>{" "}
                 {new Date(order.created_at).toLocaleString()}
               </p>
+            
 
               {/* Ordered Products */}
 

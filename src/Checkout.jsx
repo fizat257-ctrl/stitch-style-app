@@ -1,8 +1,14 @@
 import { useState } from "react";
 import { supabase } from "./supabaseClient";
+import jsPDF from "jspdf";
 
 function Checkout() {
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const [completedOrder, setCompletedOrder] = useState(null);
+
+  const [paymentMethod, setPaymentMethod] = useState(
+    "Cash on Delivery"
+  );
 
   const [customer, setCustomer] = useState({
     name: "",
@@ -25,16 +31,60 @@ function Checkout() {
     });
   }
 
+  function generateInvoice(order) {
+    const doc = new jsPDF();
+
+    doc.setFontSize(20);
+    doc.text("Stitch & Style", 20, 20);
+
+    doc.setFontSize(14);
+    doc.text("Order Invoice / Receipt", 20, 32);
+
+    doc.setFontSize(11);
+
+    doc.text(`Order ID: ${order.id}`, 20, 48);
+    doc.text(`Customer: ${customer.name}`, 20, 58);
+    doc.text(`Phone: ${customer.phone}`, 20, 68);
+    doc.text(`Address: ${customer.address}`, 20, 78);
+    doc.text(`City: ${customer.city}`, 20, 88);
+
+    doc.text(
+      `Payment Method: ${paymentMethod}`,
+      20,
+      100
+    );
+
+    doc.text(`Total: Rs. ${total}`, 20, 112);
+
+    doc.text(
+      `Date: ${new Date().toLocaleString()}`,
+      20,
+      124
+    );
+
+    doc.setFontSize(13);
+    doc.text(
+      "Thank you for shopping with Stitch & Style!",
+      20,
+      145
+    );
+
+    doc.save(`Stitch-Style-Order-${order.id}.pdf`);
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
-    const stockError = cart.some(
-  (item) => item.quantity > item.stock
-);
 
-if (stockError) {
-  alert("❌ Some products are no longer available in the requested quantity. Please update your cart.");
-  return;
-}
+    const stockError = cart.some(
+      (item) => item.quantity > item.stock
+    );
+
+    if (stockError) {
+      alert(
+        "❌ Some products are no longer available in the requested quantity. Please update your cart."
+      );
+      return;
+    }
 
     // Step 1: Save customer order
     const { data: order, error: orderError } = await supabase
@@ -47,6 +97,7 @@ if (stockError) {
           city: customer.city,
           total: total,
           status: "pending",
+          payment_method: paymentMethod,
         },
       ])
       .select()
@@ -81,30 +132,40 @@ if (stockError) {
 
       return;
     }
+
+    // Step 3: Reduce product stock
     for (const item of cart) {
-  const { error: stockError } = await supabase.rpc(
-    "reduce_product_stock",
-    {
-      p_product_id: item.id,
-      p_quantity: item.quantity,
+      const { error: stockError } = await supabase.rpc(
+        "reduce_product_stock",
+        {
+          p_product_id: item.id,
+          p_quantity: item.quantity,
+        }
+      );
+
+      if (stockError) {
+        console.error("Stock update error:", stockError);
+
+        alert(
+          `❌ Stock update failed: ${stockError.message}`
+        );
+
+        return;
+      }
     }
-  );
 
-  if (stockError) {
-    console.error("Stock update error:", stockError);
-    alert(`❌ Stock update failed: ${stockError.message}`);
-    return;
-  }
-}
-
-    // Step 3: Show success message
+    // Step 4: Save customer phone
     localStorage.setItem("customerPhone", customer.phone);
-    setOrderPlaced(true);
 
-    // Step 4: Clear cart
+    // Step 5: Show success
+    setOrderPlaced(true);
+    setCompletedOrder(order);
+
+    // Step 6: Clear cart
     localStorage.removeItem("cart");
   }
 
+  // Empty Cart
   if (cart.length === 0) {
     return (
       <div
@@ -126,6 +187,7 @@ if (stockError) {
     );
   }
 
+  // Order Success
   if (orderPlaced) {
     return (
       <div
@@ -143,12 +205,77 @@ if (stockError) {
         </p>
 
         <p>
-          We will contact you on <strong>{customer.phone}</strong>.
+          We will contact you on{" "}
+          <strong>{customer.phone}</strong>.
         </p>
 
         <p>
           Your total is <strong>Rs. {total}</strong>.
         </p>
+
+        <p>
+          Payment Method:{" "}
+          <strong>{paymentMethod}</strong>
+        </p>
+
+        {paymentMethod === "EasyPaisa" && (
+          <div
+            style={{
+              margin: "25px auto",
+              padding: "20px",
+              maxWidth: "350px",
+              background: "#f8f8f8",
+              borderRadius: "15px",
+              border: "1px solid #ddd",
+            }}
+          >
+            <h3>EasyPaisa Payment</h3>
+
+            <p>
+              Please scan the QR code to complete your
+              payment.
+            </p>
+
+            <img
+              src="/easypaisa-qr.png"
+              alt="EasyPaisa QR Code"
+              style={{
+                width: "250px",
+                height: "250px",
+                objectFit: "contain",
+                display: "block",
+                margin: "15px auto",
+              }}
+            />
+
+            <p>
+              <strong>Amount: Rs. {total}</strong>
+            </p>
+
+            <p
+              style={{
+                fontSize: "14px",
+                color: "#555",
+                lineHeight: "1.5",
+              }}
+            >
+              After making the payment, please keep your
+              payment receipt/screenshot for confirmation.
+            </p>
+          </div>
+        )}
+
+        <button
+          onClick={() => generateInvoice(completedOrder)}
+          style={{
+            padding: "12px 25px",
+            marginRight: "10px",
+            fontWeight: "bold",
+            cursor: "pointer",
+          }}
+        >
+          📄 Download Invoice
+        </button>
 
         <a href="/">
           <button style={{ padding: "12px 25px" }}>
@@ -172,6 +299,7 @@ if (stockError) {
       <h2>Total: Rs. {total}</h2>
 
       <form onSubmit={handleSubmit}>
+        {/* Full Name */}
         <div style={{ marginBottom: "15px" }}>
           <label>Full Name</label>
 
@@ -185,10 +313,12 @@ if (stockError) {
               width: "100%",
               padding: "12px",
               marginTop: "5px",
+              boxSizing: "border-box",
             }}
           />
         </div>
 
+        {/* Phone */}
         <div style={{ marginBottom: "15px" }}>
           <label>Phone Number</label>
 
@@ -202,10 +332,12 @@ if (stockError) {
               width: "100%",
               padding: "12px",
               marginTop: "5px",
+              boxSizing: "border-box",
             }}
           />
         </div>
 
+        {/* Address */}
         <div style={{ marginBottom: "15px" }}>
           <label>Complete Address</label>
 
@@ -219,10 +351,12 @@ if (stockError) {
               width: "100%",
               padding: "12px",
               marginTop: "5px",
+              boxSizing: "border-box",
             }}
           />
         </div>
 
+        {/* City */}
         <div style={{ marginBottom: "20px" }}>
           <label>City</label>
 
@@ -236,10 +370,93 @@ if (stockError) {
               width: "100%",
               padding: "12px",
               marginTop: "5px",
+              boxSizing: "border-box",
             }}
           />
         </div>
 
+        {/* Payment Method */}
+        <div style={{ marginBottom: "20px" }}>
+          <label>Payment Method</label>
+
+          <select
+            value={paymentMethod}
+            onChange={(e) =>
+              setPaymentMethod(e.target.value)
+            }
+            style={{
+              width: "100%",
+              padding: "12px",
+              marginTop: "5px",
+              boxSizing: "border-box",
+            }}
+          >
+            <option value="Cash on Delivery">
+              Cash on Delivery
+            </option>
+
+            <option value="EasyPaisa">
+              EasyPaisa
+            </option>
+          </select>
+        </div>
+
+        {/* EasyPaisa QR */}
+        {paymentMethod === "EasyPaisa" && (
+          <div
+            style={{
+              marginBottom: "25px",
+              padding: "20px",
+              textAlign: "center",
+              background: "#f8f8f8",
+              border: "1px solid #ddd",
+              borderRadius: "15px",
+            }}
+          >
+            <h3>EasyPaisa Payment 📱</h3>
+
+            <p>
+              Scan the QR code below to pay:
+            </p>
+
+            <img
+              src="/easypaisa-qr.png"
+              alt="EasyPaisa QR Code"
+              style={{
+                width: "250px",
+                height: "250px",
+                objectFit: "contain",
+                display: "block",
+                margin: "15px auto",
+              }}
+            />
+
+            <h3>Amount: Rs. {total}</h3>
+
+            <p
+              style={{
+                fontSize: "14px",
+                color: "#555",
+                lineHeight: "1.5",
+              }}
+            >
+              Please scan the QR code using your
+              EasyPaisa app and pay the exact amount
+              shown above.
+            </p>
+
+            <p
+              style={{
+                fontSize: "13px",
+                color: "#777",
+              }}
+            >
+              After payment, click "Place Order".
+            </p>
+          </div>
+        )}
+
+        {/* Place Order */}
         <button
           type="submit"
           style={{
@@ -248,6 +465,8 @@ if (stockError) {
             fontSize: "16px",
             fontWeight: "bold",
             cursor: "pointer",
+            border: "none",
+            borderRadius: "8px",
           }}
         >
           Place Order
