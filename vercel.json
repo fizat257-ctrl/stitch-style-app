@@ -27,6 +27,10 @@
     {
       "source": "/product",
       "destination": "/"
+    },
+    {
+      "source": "/custom-stitching",
+      "destination": "/"
     }
   ]
 }
