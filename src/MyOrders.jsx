@@ -6,21 +6,55 @@ function MyOrders() {
   const [message, setMessage] = useState("");
   const [orderItems, setOrderItems] = useState({});
   const [stitchingRequests, setStitchingRequests] = useState([]);
+  const [stitchingMessage, setStitchingMessage] = useState("");
 
   useEffect(() => {
     fetchOrders();
   }, []);
 
+  function normalizePhone(phone) {
+    if (!phone) return "";
+
+    let cleaned = phone
+      .toString()
+      .trim()
+      .replace(/\s+/g, "")
+      .replace(/-/g, "");
+
+    // +92XXXXXXXXXX → 03XXXXXXXXX
+    if (cleaned.startsWith("+92")) {
+      cleaned = "0" + cleaned.substring(3);
+    }
+
+    // 92XXXXXXXXXX → 03XXXXXXXXX
+    if (
+      cleaned.startsWith("92") &&
+      cleaned.length === 12
+    ) {
+      cleaned = "0" + cleaned.substring(2);
+    }
+
+    return cleaned;
+  }
+
   async function fetchOrders() {
-    const phone = localStorage.getItem("customerPhone");
-    console.log("MyOrders phone:", phone);
+    const storedPhone =
+      localStorage.getItem("customerPhone");
+
+    const phone = normalizePhone(storedPhone);
+
+    console.log("MyOrders stored phone:", storedPhone);
+    console.log("MyOrders normalized phone:", phone);
 
     if (!phone) {
       setMessage("No customer information found.");
       return;
     }
 
+    // =========================
     // Fetch Orders
+    // =========================
+
     const { data, error } = await supabase
       .from("orders")
       .select("*")
@@ -28,25 +62,32 @@ function MyOrders() {
       .order("created_at", { ascending: false });
 
     if (error) {
-      console.error(error);
+      console.error("Orders error:", error);
       setMessage("Unable to load orders.");
       return;
     }
 
     setOrders(data || []);
 
+    // =========================
     // Fetch Order Items
+    // =========================
+
     if ((data || []).length > 0) {
-      const { data: items, error: itemsError } = await supabase
-        .from("order_items")
-        .select("*")
-        .in(
-          "order_id",
-          (data || []).map((order) => order.id)
-        );
+      const { data: items, error: itemsError } =
+        await supabase
+          .from("order_items")
+          .select("*")
+          .in(
+            "order_id",
+            (data || []).map((order) => order.id)
+          );
 
       if (itemsError) {
-        console.error(itemsError);
+        console.error(
+          "Order items error:",
+          itemsError
+        );
         return;
       }
 
@@ -63,21 +104,57 @@ function MyOrders() {
       setOrderItems(groupedItems);
     }
 
+    // =========================
     // Fetch Custom Stitching Requests
-    const { data: stitchingData, error: stitchingError } =
-      await supabase
-        .from("custom_stitching_requests")
-        .select("*")
-        .eq("phone", phone)
-        .order("created_at", { ascending: false });
+    // =========================
+
+    const {
+      data: stitchingData,
+      error: stitchingError,
+    } = await supabase
+      .from("custom_stitching_requests")
+      .select("*")
+      .order("created_at", {
+        ascending: false,
+      });
 
     if (stitchingError) {
       console.error(
         "Stitching requests error:",
         stitchingError
       );
+
+      setStitchingMessage(
+        "Unable to load custom stitching requests."
+      );
+
+      return;
+    }
+
+    // Match phone numbers after fetching requests
+    const matchedRequests = (stitchingData || []).filter(
+      (request) =>
+        normalizePhone(request.phone) === phone
+    );
+
+    console.log(
+      "All stitching requests:",
+      stitchingData
+    );
+
+    console.log(
+      "Matched stitching requests:",
+      matchedRequests
+    );
+
+    setStitchingRequests(matchedRequests);
+
+    if (matchedRequests.length === 0) {
+      setStitchingMessage(
+        "No custom stitching request found for this phone number."
+      );
     } else {
-      setStitchingRequests(stitchingData || []);
+      setStitchingMessage("");
     }
   }
 
@@ -97,6 +174,10 @@ function MyOrders() {
         <p>You have no orders yet.</p>
       )}
 
+      {/* =========================
+          ORDERS
+      ========================= */}
+
       {orders.map((order) => (
         <div
           key={order.id}
@@ -105,7 +186,8 @@ function MyOrders() {
             marginBottom: "20px",
             background: "#fff",
             borderRadius: "12px",
-            boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+            boxShadow:
+              "0 2px 10px rgba(0,0,0,0.1)",
           }}
         >
           <h3>Order #{order.id}</h3>
@@ -150,7 +232,8 @@ function MyOrders() {
           </p>
 
           <p>
-            <strong>Total:</strong> Rs. {order.total}
+            <strong>Total:</strong> Rs.{" "}
+            {order.total}
           </p>
 
           <p>
@@ -158,12 +241,15 @@ function MyOrders() {
           </p>
 
           <p>
-            <strong>Address:</strong> {order.address}
+            <strong>Address:</strong>{" "}
+            {order.address}
           </p>
 
           <p>
             <strong>Order Date:</strong>{" "}
-            {new Date(order.created_at).toLocaleString()}
+            {new Date(
+              order.created_at
+            ).toLocaleString()}
           </p>
 
           <h4>Ordered Products 🛍️</h4>
@@ -239,18 +325,29 @@ function MyOrders() {
                       }}
                     >
                       Subtotal: Rs.{" "}
-                      {Number(item.price) * item.quantity}
+                      {Number(item.price) *
+                        item.quantity}
                     </p>
 
                     {item.selected_color && (
-                      <p style={{ margin: "4px 0" }}>
-                        Color: {item.selected_color}
+                      <p
+                        style={{
+                          margin: "4px 0",
+                        }}
+                      >
+                        Color:{" "}
+                        {item.selected_color}
                       </p>
                     )}
 
                     {item.selected_size && (
-                      <p style={{ margin: "4px 0" }}>
-                        Size: {item.selected_size}
+                      <p
+                        style={{
+                          margin: "4px 0",
+                        }}
+                      >
+                        Size:{" "}
+                        {item.selected_size}
                       </p>
                     )}
                   </div>
@@ -263,7 +360,9 @@ function MyOrders() {
         </div>
       ))}
 
-      {/* Custom Stitching Requests */}
+      {/* =========================
+          CUSTOM STITCHING REQUESTS
+      ========================= */}
 
       <div
         style={{
@@ -271,16 +370,21 @@ function MyOrders() {
           padding: "20px",
           background: "#fff",
           borderRadius: "12px",
-          boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+          boxShadow:
+            "0 2px 10px rgba(0,0,0,0.1)",
         }}
       >
         <h2 style={{ color: "#8b5e3c" }}>
           🧵 My Custom Stitching Requests
         </h2>
 
-        {stitchingRequests.length === 0 ? (
-          <p>No custom stitching requests found.</p>
-        ) : (
+        {stitchingMessage && (
+          <p style={{ color: "#666" }}>
+            {stitchingMessage}
+          </p>
+        )}
+
+        {stitchingRequests.length > 0 &&
           stitchingRequests.map((request) => (
             <div
               key={request.id}
@@ -293,8 +397,19 @@ function MyOrders() {
               }}
             >
               <h3>
-                {request.product_name || "Custom Stitching"}
+                {request.product_name ||
+                  "Custom Stitching"}
               </h3>
+
+              <p>
+                <strong>Customer:</strong>{" "}
+                {request.customer_name}
+              </p>
+
+              <p>
+                <strong>Phone:</strong>{" "}
+                {request.phone}
+              </p>
 
               <p>
                 <strong>Size:</strong>{" "}
@@ -304,13 +419,15 @@ function MyOrders() {
               <p>
                 <strong>Measurements:</strong>
                 <br />
-                {request.measurements || "N/A"}
+                {request.measurements ||
+                  "N/A"}
               </p>
 
               <p>
                 <strong>Instructions:</strong>
                 <br />
-                {request.stitching_instructions || "N/A"}
+                {request.stitching_instructions ||
+                  "N/A"}
               </p>
 
               <p>
@@ -322,38 +439,55 @@ function MyOrders() {
                     borderRadius: "20px",
                     fontWeight: "bold",
                     background:
-                      request.status === "Completed"
+                      request.status ===
+                      "Completed"
                         ? "#d4edda"
-                        : request.status === "In Progress"
+                        : request.status ===
+                          "In Progress"
                         ? "#cfe2ff"
-                        : request.status === "Confirmed"
+                        : request.status ===
+                          "Confirmed"
                         ? "#d1ecf1"
-                        : request.status === "Cancelled"
+                        : request.status ===
+                          "Cancelled"
                         ? "#f8d7da"
                         : "#fff3cd",
                     color:
-                      request.status === "Completed"
+                      request.status ===
+                      "Completed"
                         ? "#155724"
-                        : request.status === "In Progress"
+                        : request.status ===
+                          "In Progress"
                         ? "#084298"
-                        : request.status === "Confirmed"
+                        : request.status ===
+                          "Confirmed"
                         ? "#0c5460"
-                        : request.status === "Cancelled"
+                        : request.status ===
+                          "Cancelled"
                         ? "#721c24"
                         : "#856404",
                   }}
                 >
-                  {request.status || "Pending"}
+                  {request.status ||
+                    "Pending"}
                 </span>
               </p>
 
               {request.reference_image_url && (
-                <div style={{ marginTop: "10px" }}>
-                  <strong>Reference Design:</strong>
+                <div
+                  style={{
+                    marginTop: "10px",
+                  }}
+                >
+                  <strong>
+                    Reference Design:
+                  </strong>
                   <br />
 
                   <img
-                    src={request.reference_image_url}
+                    src={
+                      request.reference_image_url
+                    }
                     alt="Reference Design"
                     style={{
                       width: "180px",
@@ -381,8 +515,7 @@ function MyOrders() {
                   : "N/A"}
               </p>
             </div>
-          ))
-        )}
+          ))}
       </div>
     </div>
   );
