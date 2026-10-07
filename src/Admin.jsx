@@ -825,6 +825,13 @@ async function deleteProductGalleryImage(id, imageUrl) {
                           <p style={{ margin: "4px 0" }}>
                             Quantity: {item.quantity}
                           </p>
+                          <p style={{ margin: "5px 0" }}>
+  Color: {item.selected_color || "N/A"}
+</p>
+
+<p style={{ margin: "5px 0" }}>
+  Size: {item.selected_size || "N/A"}
+</p>
 
                           <p
                             style={{
