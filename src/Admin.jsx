@@ -691,6 +691,7 @@ async function deleteProductGalleryImage(id, imageUrl) {
             <option value="Fragrance">Fragrance</option>
 <option value="Jewelry">Jewelry</option>
 <option value="Makeup">Makeup</option>
+<option value="Bags">Bags</option>
           </select>
         </div>
 
