@@ -7,6 +7,7 @@ import Checkout from "./Checkout";
 import MyOrders from "./MyOrders.jsx";
 import Wishlist from "./Wishlist.jsx";
 import ProductDetails from "./ProductDetails.jsx";
+import CustomStitching from "./CustomStitching";
 
 function App() {
   const [products, setProducts] = useState([]);
@@ -41,6 +42,7 @@ function App() {
   const isMyOrders = path === "/my-orders";
   const isWishlist = path === "/wishlist";
   const isProductDetails = path === "/product";
+  const isCustomStitching = path === "/custom-stitching";
 
   useEffect(() => {
     if (
@@ -50,7 +52,8 @@ function App() {
       !isCheckout &&
       !isMyOrders &&
       !isWishlist &&
-      !isProductDetails
+      !isProductDetails &&
+      !isCustomStitching
     ) {
       fetchProducts();
     }
@@ -62,6 +65,7 @@ function App() {
     isMyOrders,
     isWishlist,
     isProductDetails,
+    isCustomStitching,
   ]);
 
   async function fetchProducts() {
@@ -189,6 +193,11 @@ function App() {
     return <ProductDetails />;
   }
 
+  // Custom Stitching Page
+  if (isCustomStitching) {
+    return <CustomStitching />;
+  }
+
   return (
     <div
       style={{
@@ -239,6 +248,18 @@ function App() {
             }}
           >
             Products
+          </a>
+
+          {/* Custom Stitching */}
+          <a
+            href="/custom-stitching"
+            style={{
+              textDecoration: "none",
+              color: "#8b5e3c",
+              fontWeight: "bold",
+            }}
+          >
+            🧵 Custom Stitching
           </a>
 
           <a

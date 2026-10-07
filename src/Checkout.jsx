@@ -17,8 +17,13 @@ function Checkout() {
     city: "",
   });
 
-  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+  const buyNowItem = JSON.parse(
+  localStorage.getItem("buyNowItem") || "null"
+);
 
+const cart = buyNowItem
+  ? [buyNowItem]
+  : JSON.parse(localStorage.getItem("cart") || "[]");
   const total = cart.reduce(
     (sum, item) => sum + Number(item.price) * item.quantity,
     0
@@ -167,6 +172,7 @@ function Checkout() {
 
     // Step 6: Clear cart
     localStorage.removeItem("cart");
+    localStorage.removeItem("buyNowItem");
   }
 
   // Empty Cart

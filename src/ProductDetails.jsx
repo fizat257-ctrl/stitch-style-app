@@ -183,6 +183,32 @@ function ProductDetails() {
     );
   }
 
+function buyNow() {
+  if (!selectedColor) {
+    alert("Please select a color.");
+    return;
+  }
+
+  if (!selectedSize) {
+    alert("Please select a size.");
+    return;
+  }
+
+  const buyNowItem = {
+    ...product,
+    quantity: 1,
+    selectedColor: selectedColor,
+    selectedSize: selectedSize,
+  };
+
+  localStorage.setItem(
+    "buyNowItem",
+    JSON.stringify(buyNowItem)
+  );
+
+  window.location.href = "/checkout";
+}
+
   function addToWishlist() {
     const wishlist = JSON.parse(
       localStorage.getItem("wishlist") || "[]"
@@ -612,6 +638,23 @@ function ProductDetails() {
                 ? "🛒 Add to Cart"
                 : "Out of Stock"}
             </button>
+            <button
+  onClick={buyNow}
+  style={{
+    width: "100%",
+    padding: "14px",
+    marginTop: "10px",
+    backgroundColor: "#000",
+    color: "#fff",
+    border: "none",
+    borderRadius: "8px",
+    fontSize: "16px",
+    fontWeight: "bold",
+    cursor: "pointer",
+  }}
+>
+  ⚡ Buy Now
+</button>
           </div>
         </div>
 

@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "./supabaseClient";
 
 function Admin() {
+  const [stitchingRequests, setStitchingRequests] = useState([]);
+const [loadingStitching, setLoadingStitching] = useState(true);
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [orderItems, setOrderItems] = useState({});
@@ -25,6 +27,20 @@ function Admin() {
   useEffect(() => {
     checkUser();
   }, []);
+  async function fetchStitchingRequests() {
+  const { data, error } = await supabase
+    .from("custom_stitching_requests")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Stitching requests error:", error);
+    return;
+  }
+
+  setStitchingRequests(data || []);
+  setLoadingStitching(false);
+}
 
   async function checkUser() {
     const {
@@ -39,6 +55,7 @@ function Admin() {
     setUser(user);
     setLoading(false);
 
+    fetchStitchingRequests();
     fetchProducts();
     fetchOrders();
     fetchReviews();
@@ -136,6 +153,26 @@ async function deleteReview(id) {
   alert("✅ Review deleted successfully!");
 
   fetchReviews();
+}
+async function updateStitchingStatus(id, status) {
+  const { error } = await supabase
+    .from("custom_stitching_requests")
+    .update({ status })
+    .eq("id", id);
+
+  if (error) {
+    console.error("Stitching status error:", error);
+    alert("Status update failed");
+    return;
+  }
+
+  setStitchingRequests((prev) =>
+    prev.map((request) =>
+      request.id === id
+        ? { ...request, status }
+        : request
+    )
+  );
 }
 async function fetchProductImages() {
   const { data, error } = await supabase
@@ -894,6 +931,129 @@ async function deleteProductGalleryImage(id, imageUrl) {
           ))}
         </div>
       )}
+      {/* Custom Stitching Requests */}
+
+<div
+  style={{
+    marginTop: "30px",
+    padding: "20px",
+    background: "#fff",
+    borderRadius: "12px",
+    boxShadow: "0 3px 15px rgba(0,0,0,0.08)",
+  }}
+>
+  <h2 style={{ color: "#8b5e3c" }}>
+    🧵 Custom Stitching Requests
+  </h2>
+
+  {loadingStitching ? (
+    <p>Loading stitching requests...</p>
+  ) : stitchingRequests.length === 0 ? (
+    <p>No custom stitching requests found.</p>
+  ) : (
+    stitchingRequests.map((request) => (
+      <div
+        key={request.id}
+        style={{
+          border: "1px solid #ddd",
+          borderRadius: "10px",
+          padding: "15px",
+          marginTop: "15px",
+        }}
+      >
+        <p>
+          <strong>Customer:</strong>{" "}
+          {request.customer_name}
+        </p>
+
+        <p>
+          <strong>Phone:</strong>{" "}
+          {request.phone}
+        </p>
+
+        <p>
+          <strong>Product:</strong>{" "}
+          {request.product_name || "N/A"}
+        </p>
+
+        <p>
+          <strong>Size:</strong>{" "}
+          {request.size || "N/A"}
+        </p>
+
+        <p>
+          <strong>Measurements:</strong><br />
+          {request.measurements || "N/A"}
+        </p>
+
+        <p>
+          <strong>Instructions:</strong><br />
+          {request.stitching_instructions || "N/A"}
+        </p>
+
+        <div style={{ marginTop: "10px" }}>
+  <strong>Status:</strong>
+
+  <select
+    value={request.status || "Pending"}
+    onChange={(e) =>
+      updateStitchingStatus(
+        request.id,
+        e.target.value
+      )
+    }
+    style={{
+      marginLeft: "10px",
+      padding: "7px",
+      borderRadius: "6px",
+      border: "1px solid #ccc",
+    }}
+  >
+    <option value="Pending">Pending</option>
+    <option value="Confirmed">Confirmed</option>
+    <option value="In Progress">In Progress</option>
+    <option value="Completed">Completed</option>
+    <option value="Cancelled">Cancelled</option>
+  </select>
+</div>
+
+        {request.reference_image_url && (
+          <div style={{ marginTop: "10px" }}>
+            <strong>Reference Design:</strong>
+            <br />
+
+            <img
+              src={request.reference_image_url}
+              alt="Reference Design"
+              style={{
+                width: "180px",
+                maxHeight: "220px",
+                objectFit: "cover",
+                borderRadius: "8px",
+                marginTop: "8px",
+              }}
+            />
+          </div>
+        )}
+
+        <p
+          style={{
+            color: "#777",
+            fontSize: "13px",
+            marginTop: "12px",
+          }}
+        >
+          Submitted:{" "}
+          {request.created_at
+            ? new Date(
+                request.created_at
+              ).toLocaleString()
+            : "N/A"}
+        </p>
+      </div>
+    ))
+  )}
+</div>
       <div
   style={{
     marginTop: "50px",
@@ -902,6 +1062,7 @@ async function deleteProductGalleryImage(id, imageUrl) {
     borderRadius: "12px",
     boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
   }}
+  
 >
   <h2>Customer Reviews ⭐</h2>
 
