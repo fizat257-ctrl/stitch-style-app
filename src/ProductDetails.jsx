@@ -22,24 +22,25 @@ function ProductDetails() {
     fetchReviews();
     fetchProductImages();
   }, []);
+
   async function fetchProductImages() {
-  if (!productId) {
-    return;
+    if (!productId) {
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("product_images")
+      .select("*")
+      .eq("product_id", productId)
+      .order("id", { ascending: false });
+
+    if (error) {
+      console.error("Product images error:", error);
+      return;
+    }
+
+    setProductImages(data || []);
   }
-
-  const { data, error } = await supabase
-    .from("product_images")
-    .select("*")
-    .eq("product_id", productId)
-    .order("id", { ascending: false });
-
-  if (error) {
-    console.error("Product images error:", error);
-    return;
-  }
-
-  setProductImages(data || []);
-}
 
   async function fetchProduct() {
     if (!productId) {
@@ -294,7 +295,6 @@ function ProductDetails() {
               <img
                 src={selectedImage || product.image_url}
                 alt={product.name}
-                onClick={() => setSelectedImage(image.image_url)}
                 style={{
                   width: "100%",
                   height: "450px",
@@ -317,33 +317,66 @@ function ProductDetails() {
                 🛍️
               </div>
             )}
+
+            {/* Product Video */}
+
+            {product.video_url && (
+              <div style={{ marginTop: "15px" }}>
+                <h3>Product Video 🎥</h3>
+
+                <video
+  src={product.video_url}
+  controls
+  playsInline
+  preload="metadata"
+  muted={false}
+  defaultMuted={false}
+  volume={1}
+  style={{
+    width: "100%",
+    maxHeight: "350px",
+    borderRadius: "12px",
+    display: "block",
+  }}
+/>
+              </div>
+            )}
+
+            {/* Product Gallery */}
+
+            {productImages.length > 0 && (
+              <div
+                style={{
+                  display: "flex",
+                  gap: "10px",
+                  flexWrap: "wrap",
+                  marginTop: "15px",
+                }}
+              >
+                {productImages.map((image) => (
+                  <img
+                    key={image.id}
+                    src={image.image_url}
+                    alt={product.name}
+                    onClick={() =>
+                      setSelectedImage(image.image_url)
+                    }
+                    style={{
+                      width: "80px",
+                      height: "80px",
+                      objectFit: "cover",
+                      borderRadius: "8px",
+                      border:
+                        selectedImage === image.image_url
+                          ? "2px solid #8b5e3c"
+                          : "1px solid #ddd",
+                      cursor: "pointer",
+                    }}
+                  />
+                ))}
+              </div>
+            )}
           </div>
-          {productImages.length > 0 && (
-  <div
-    style={{
-      display: "flex",
-      gap: "10px",
-      flexWrap: "wrap",
-      marginTop: "15px",
-    }}
-  >
-    {productImages.map((image) => (
-      <img
-        key={image.id}
-        src={image.image_url}
-        alt={product.name}
-        style={{
-          width: "80px",
-          height: "80px",
-          objectFit: "cover",
-          borderRadius: "8px",
-          border: "1px solid #ddd",
-          cursor: "pointer",
-        }}
-      />
-    ))}
-  </div>
-)}
 
           {/* Product Information */}
 

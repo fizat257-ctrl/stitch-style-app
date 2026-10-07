@@ -14,6 +14,7 @@ function Admin() {
   const [category, setCategory] = useState("Clothing");
   const [stock, setStock] = useState("");
   const [imageFile, setImageFile] = useState(null);
+  const [videoFile, setVideoFile] = useState(null);
 
   const [editingId, setEditingId] = useState(null);
   const [message, setMessage] = useState("");
@@ -248,6 +249,32 @@ async function deleteProductGalleryImage(id, imageUrl) {
 
     return data.publicUrl;
   }
+  async function uploadVideo() {
+  if (!videoFile) {
+    return null;
+  }
+
+  const fileExtension = videoFile.name.split(".").pop();
+
+  const fileName = `${Date.now()}-${Math.random()
+    .toString(36)
+    .substring(2)}.${fileExtension}`;
+
+  const { error } = await supabase.storage
+    .from("products")
+    .upload(fileName, videoFile);
+
+  if (error) {
+    console.error("Video upload error:", error);
+    return null;
+  }
+
+  const { data } = supabase.storage
+    .from("products")
+    .getPublicUrl(fileName);
+
+  return data.publicUrl;
+}
 
   async function addProduct(e) {
     e.preventDefault();
@@ -264,6 +291,17 @@ async function deleteProductGalleryImage(id, imageUrl) {
       }
     }
 
+    let videoUrl = null;
+
+    if (videoFile) {
+      videoUrl = await uploadVideo();
+
+      if (!videoUrl) {
+        setMessage("❌ Video upload nahi hui.");
+        return;
+      }
+    }
+
     const { error } = await supabase.from("products").insert([
       {
         name,
@@ -272,6 +310,7 @@ async function deleteProductGalleryImage(id, imageUrl) {
         category,
         stock: Number(stock),
         image_url: imageUrl,
+        video_url: videoUrl,
       },
     ]);
 
@@ -436,6 +475,7 @@ async function deleteProductGalleryImage(id, imageUrl) {
     setCategory("Clothing");
     setStock("");
     setImageFile(null);
+    setVideoFile(null);
   }
 
   async function logout() {
@@ -606,18 +646,32 @@ async function deleteProductGalleryImage(id, imageUrl) {
         </div>
 
         <div style={{ marginBottom: "20px" }}>
-          <label>Product Image</label>
-          <br />
+  <label>Product Image</label>
+  <br />
 
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setImageFile(e.target.files[0])}
-            style={{
-              marginTop: "8px",
-            }}
-          />
-        </div>
+  <input
+    type="file"
+    accept="image/*"
+    onChange={(e) => setImageFile(e.target.files[0])}
+    style={{
+      marginTop: "8px",
+    }}
+  />
+
+  <div style={{ marginTop: "15px" }}>
+    <label>Product Video</label>
+    <br />
+
+    <input
+      type="file"
+      accept="video/*"
+      onChange={(e) => setVideoFile(e.target.files[0])}
+      style={{
+        marginTop: "8px",
+      }}
+    />
+  </div>
+</div>
 
         <button type="submit">
           {editingId ? "Update Product" : "Add Product"}
@@ -929,6 +983,19 @@ async function deleteProductGalleryImage(id, imageUrl) {
               )}
 
               <h3>{product.name}</h3>
+              {product.video_url && (
+  <video
+    src={product.video_url}
+    controls
+    style={{
+      width: "100%",
+      height: "200px",
+      objectFit: "cover",
+      borderRadius: "10px",
+      marginBottom: "15px",
+    }}
+  />
+)}
               <input
   type="file"
   accept="image/*"
