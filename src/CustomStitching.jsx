@@ -29,10 +29,18 @@ function CustomStitching() {
       .order("name", { ascending: true });
 
     if (error) {
-      console.error("Products error:", error);
-      setLoadingProducts(false);
-      return;
-    }
+  console.error("Products error:", error);
+
+  alert(
+    "Products load nahi ho rahe.\n\n" +
+    error.message +
+    "\n\nCode: " +
+    error.code
+  );
+
+  setLoadingProducts(false);
+  return;
+}
 
     setProducts(data || []);
     setLoadingProducts(false);
