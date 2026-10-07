@@ -7,6 +7,7 @@ function MyOrders() {
   const [orderItems, setOrderItems] = useState({});
   const [stitchingRequests, setStitchingRequests] = useState([]);
   const [stitchingMessage, setStitchingMessage] = useState("");
+  const [phoneInput, setPhoneInput] = useState("");
 
   useEffect(() => {
     fetchOrders();
@@ -37,8 +38,9 @@ function MyOrders() {
     return cleaned;
   }
 
-  async function fetchOrders() {
+  async function fetchOrders(phoneFromInput = null) {
     const storedPhone =
+      phoneFromInput ||
       localStorage.getItem("customerPhone");
 
     const phone = normalizePhone(storedPhone);
@@ -47,9 +49,13 @@ function MyOrders() {
     console.log("MyOrders normalized phone:", phone);
 
     if (!phone) {
-      setMessage("No customer information found.");
+      setMessage("");
+      setStitchingMessage("");
       return;
     }
+
+    // Save phone for future visits
+    localStorage.setItem("customerPhone", phone);
 
     // =========================
     // Fetch Orders
@@ -102,6 +108,8 @@ function MyOrders() {
       });
 
       setOrderItems(groupedItems);
+    } else {
+      setOrderItems({});
     }
 
     // =========================
@@ -131,20 +139,20 @@ function MyOrders() {
       return;
     }
 
-    // Match phone numbers after fetching requests
-   const matchedRequests = (stitchingData || []).filter(
-  (request) =>
-    normalizePhone(request.phone) === phone
-);
-
-console.log(
-  "Latest stitching requests:",
-  matchedRequests
-);
-
     console.log(
       "All stitching requests:",
       stitchingData
+    );
+
+    // Match phone numbers after fetching requests
+    const matchedRequests = (stitchingData || []).filter(
+      (request) =>
+        normalizePhone(request.phone) === phone
+    );
+
+    console.log(
+      "Latest stitching requests:",
+      matchedRequests
     );
 
     console.log(
@@ -161,6 +169,32 @@ console.log(
     } else {
       setStitchingMessage("");
     }
+
+    if ((data || []).length === 0) {
+      setMessage("No orders found for this phone number.");
+    } else {
+      setMessage("");
+    }
+  }
+
+  function handlePhoneSubmit(e) {
+    e.preventDefault();
+
+    const phone = normalizePhone(phoneInput);
+
+    if (!phone) {
+      alert("Please enter your phone number.");
+      return;
+    }
+
+    if (phone.length !== 11) {
+      alert(
+        "Please enter a valid Pakistani phone number.\nExample: 03001234567"
+      );
+      return;
+    }
+
+    fetchOrders(phone);
   }
 
   return (
@@ -172,6 +206,69 @@ console.log(
       }}
     >
       <h1>My Orders 📦</h1>
+
+      {/* =========================
+          CUSTOMER PHONE
+      ========================= */}
+
+      {!localStorage.getItem("customerPhone") && (
+        <div
+          style={{
+            marginBottom: "30px",
+            padding: "20px",
+            background: "#fff",
+            borderRadius: "12px",
+            boxShadow:
+              "0 2px 10px rgba(0,0,0,0.1)",
+          }}
+        >
+          <h3 style={{ marginTop: 0 }}>
+            📱 Enter Your Phone Number
+          </h3>
+
+          <p style={{ color: "#666" }}>
+            Apne orders aur custom stitching requests
+            dekhne ke liye wahi phone number enter karein
+            jo request/order ke waqt use kiya tha.
+          </p>
+
+          <form onSubmit={handlePhoneSubmit}>
+            <input
+              type="tel"
+              value={phoneInput}
+              onChange={(e) =>
+                setPhoneInput(e.target.value)
+              }
+              placeholder="03XXXXXXXXX"
+              style={{
+                width: "100%",
+                padding: "12px",
+                border: "1px solid #ccc",
+                borderRadius: "8px",
+                fontSize: "15px",
+                boxSizing: "border-box",
+                marginBottom: "10px",
+              }}
+            />
+
+            <button
+              type="submit"
+              style={{
+                width: "100%",
+                padding: "12px",
+                background: "#8b5e3c",
+                color: "white",
+                border: "none",
+                borderRadius: "8px",
+                fontWeight: "bold",
+                cursor: "pointer",
+              }}
+            >
+              🔍 Find My Orders
+            </button>
+          </form>
+        </div>
+      )}
 
       {message && <p>{message}</p>}
 
@@ -405,24 +502,15 @@ console.log(
                 {request.product_name ||
                   "Custom Stitching"}
               </h3>
-              <p>
-  <strong>Customer Name:</strong>{" "}
-  {request.customer_name || "N/A"}
-</p>
-
-<p>
-  <strong>Phone:</strong>{" "}
-  {request.phone || "N/A"}
-</p>
 
               <p>
-                <strong>Customer:</strong>{" "}
-                {request.customer_name}
+                <strong>Customer Name:</strong>{" "}
+                {request.customer_name || "N/A"}
               </p>
 
               <p>
                 <strong>Phone:</strong>{" "}
-                {request.phone}
+                {request.phone || "N/A"}
               </p>
 
               <p>
