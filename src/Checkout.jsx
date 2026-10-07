@@ -111,13 +111,17 @@ function Checkout() {
 
     // Step 2: Save ordered products
     const orderItems = cart.map((item) => ({
-      order_id: order.id,
-      product_id: item.id,
-      product_name: item.name,
-      price: Number(item.price),
-      quantity: item.quantity,
-      image_url: item.image_url || "",
-    }));
+  order_id: order.id,
+  product_id: item.id,
+  product_name: item.name,
+  price: Number(item.price),
+  quantity: item.quantity,
+  image_url: item.image_url || "",
+
+  // Selected product options
+  selected_color: item.selectedColor || "",
+  selected_size: item.selectedSize || "",
+}));
 
     const { error: itemsError } = await supabase
       .from("order_items")

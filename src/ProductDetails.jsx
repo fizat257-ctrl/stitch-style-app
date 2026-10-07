@@ -10,12 +10,38 @@ function ProductDetails() {
   const [selectedImage, setSelectedImage] = useState("");
   const [reviewLoading, setReviewLoading] = useState(false);
 
+  // Color and Size Selection
+  const [selectedColor, setSelectedColor] = useState("");
+  const [selectedSize, setSelectedSize] = useState("");
+
   const [customerName, setCustomerName] = useState("");
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
 
   const params = new URLSearchParams(window.location.search);
   const productId = params.get("id");
+
+  // Available Colors
+  const colors = [
+    "Black",
+    "White",
+    "Red",
+    "Blue",
+    "Pink",
+    "Green",
+    "Brown",
+    "Beige",
+  ];
+
+  // Available Sizes
+  const sizes = [
+    "XS",
+    "S",
+    "M",
+    "L",
+    "XL",
+    "XXL",
+  ];
 
   useEffect(() => {
     fetchProduct();
@@ -90,12 +116,28 @@ function ProductDetails() {
       return;
     }
 
+    // Color required
+    if (!selectedColor) {
+      alert("🎨 Please select a color.");
+      return;
+    }
+
+    // Size required
+    if (!selectedSize) {
+      alert("📏 Please select a size.");
+      return;
+    }
+
     const cart = JSON.parse(
       localStorage.getItem("cart") || "[]"
     );
 
+    // Same product + same color + same size
     const existingProduct = cart.find(
-      (item) => item.id === product.id
+      (item) =>
+        item.id === product.id &&
+        item.selectedColor === selectedColor &&
+        item.selectedSize === selectedSize
     );
 
     if (existingProduct) {
@@ -107,7 +149,9 @@ function ProductDetails() {
       }
 
       const updatedCart = cart.map((item) =>
-        item.id === product.id
+        item.id === product.id &&
+        item.selectedColor === selectedColor &&
+        item.selectedSize === selectedSize
           ? {
               ...item,
               quantity: item.quantity + 1,
@@ -127,12 +171,16 @@ function ProductDetails() {
           {
             ...product,
             quantity: 1,
+            selectedColor: selectedColor,
+            selectedSize: selectedSize,
           },
         ])
       );
     }
 
-    alert("🛒 Product added to cart!");
+    alert(
+      `🛒 Product added to cart!\nColor: ${selectedColor}\nSize: ${selectedSize}`
+    );
   }
 
   function addToWishlist() {
@@ -325,20 +373,20 @@ function ProductDetails() {
                 <h3>Product Video 🎥</h3>
 
                 <video
-  src={product.video_url}
-  controls
-  playsInline
-  preload="metadata"
-  muted={false}
-  defaultMuted={false}
-  volume={1}
-  style={{
-    width: "100%",
-    maxHeight: "350px",
-    borderRadius: "12px",
-    display: "block",
-  }}
-/>
+                  src={product.video_url}
+                  controls
+                  playsInline
+                  preload="metadata"
+                  muted={false}
+                  defaultMuted={false}
+                  volume={1}
+                  style={{
+                    width: "100%",
+                    maxHeight: "350px",
+                    borderRadius: "12px",
+                    display: "block",
+                  }}
+                />
               </div>
             )}
 
@@ -424,6 +472,105 @@ function ProductDetails() {
               {product.description}
             </p>
 
+            {/* Color Selection */}
+
+            <div style={{ marginTop: "25px" }}>
+              <h3>
+                Select Color:{" "}
+                <span style={{ color: "#8b5e3c" }}>
+                  {selectedColor || "None"}
+                </span>
+              </h3>
+
+              <div
+                style={{
+                  display: "flex",
+                  gap: "10px",
+                  flexWrap: "wrap",
+                }}
+              >
+                {colors.map((color) => (
+                  <button
+                    key={color}
+                    type="button"
+                    onClick={() =>
+                      setSelectedColor(color)
+                    }
+                    style={{
+                      padding: "10px 16px",
+                      borderRadius: "8px",
+                      border:
+                        selectedColor === color
+                          ? "2px solid #8b5e3c"
+                          : "1px solid #ccc",
+                      background:
+                        selectedColor === color
+                          ? "#f1e2d5"
+                          : "white",
+                      color: "#222",
+                      cursor: "pointer",
+                      fontWeight:
+                        selectedColor === color
+                          ? "bold"
+                          : "normal",
+                    }}
+                  >
+                    {color}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Size Selection */}
+
+            <div style={{ marginTop: "25px" }}>
+              <h3>
+                Select Size:{" "}
+                <span style={{ color: "#8b5e3c" }}>
+                  {selectedSize || "None"}
+                </span>
+              </h3>
+
+              <div
+                style={{
+                  display: "flex",
+                  gap: "10px",
+                  flexWrap: "wrap",
+                }}
+              >
+                {sizes.map((size) => (
+                  <button
+                    key={size}
+                    type="button"
+                    onClick={() =>
+                      setSelectedSize(size)
+                    }
+                    style={{
+                      minWidth: "55px",
+                      padding: "10px 14px",
+                      borderRadius: "8px",
+                      border:
+                        selectedSize === size
+                          ? "2px solid #8b5e3c"
+                          : "1px solid #ccc",
+                      background:
+                        selectedSize === size
+                          ? "#f1e2d5"
+                          : "white",
+                      color: "#222",
+                      cursor: "pointer",
+                      fontWeight:
+                        selectedSize === size
+                          ? "bold"
+                          : "normal",
+                    }}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Wishlist */}
 
             <button
@@ -431,7 +578,7 @@ function ProductDetails() {
               style={{
                 width: "100%",
                 padding: "13px",
-                marginTop: "20px",
+                marginTop: "25px",
                 background: "white",
                 color: "#b33",
                 border: "1px solid #b33",
