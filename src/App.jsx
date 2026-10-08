@@ -360,10 +360,10 @@ const [showSaleProducts, setShowSaleProducts] = useState(false);
         {/* Featured Products */}
         <button
           onClick={() => {
-            setShowFeatured(false);
-            setShowNewArrivals(true);
+            setShowFeatured(true);
+            setShowNewArrivals(false);
             setShowSaleProducts(false);
-            setMenuOpen(false);
+            setMenuOpen(true);
           }}
           style={{
             background: "none",
@@ -378,47 +378,8 @@ const [showSaleProducts, setShowSaleProducts] = useState(false);
           ⭐ Featured Products
         </button>
 
-        {/* New Arrivals */}
-        <button
-          onClick={() => {
-            setShowFeatured(false);
-            setShowNewArrivals(true);
-            setShowSaleProducts(false);
-            setMenuOpen(false);
-          }}
-          style={{
-            background: "none",
-            border: "none",
-            padding: 0,
-            fontSize: "16px",
-            cursor: "pointer",
-            color: "#222",
-            textAlign: "left",
-          }}
-        >
-          🆕 New Arrivals
-        </button>
-
-        {/* Sale Products */}
-        <button
-          onClick={() => {
-            setShowFeatured(false);
-            setShowNewArrivals(false);
-            setShowSaleProducts(true);
-            setMenuOpen(false);
-          }}
-          style={{
-            background: "none",
-            border: "none",
-            padding: 0,
-            fontSize: "16px",
-            cursor: "pointer",
-            color: "#222",
-            textAlign: "left",
-          }}
-        >
-          🔥 Sale Products
-        </button>
+       
+          
 
         {/* Wishlist */}
         <a
