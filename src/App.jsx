@@ -15,6 +15,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const [cart, setCart] = useState(() => {
     const savedCart = localStorage.getItem("cart");
@@ -225,6 +226,27 @@ function App() {
         }}
       >
         <h1 style={{ margin: 0 }}>Stitch & Style</h1>
+        <style>
+  {`
+    .desktop-menu {
+      display: flex;
+    }
+
+    .mobile-menu-button {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .desktop-menu {
+        display: none !important;
+      }
+
+      .mobile-menu-button {
+        display: block !important;
+      }
+    }
+  `}
+</style>
 
         <nav
           style={{
@@ -234,6 +256,108 @@ function App() {
             flexWrap: "wrap",
           }}
         >
+         <button
+  className="mobile-menu-button"
+  onClick={() => setMenuOpen(!menuOpen)}
+  style={{
+    background: "none",
+    border: "none",
+    fontSize: "28px",
+    cursor: "pointer",
+  }}
+>
+  ☰
+</button>
+<div className="desktop-menu"></div>
+{menuOpen && (
+  <div
+    style={{
+      width: "100%",
+      display: "flex",
+      flexDirection: "column",
+      gap: "12px",
+      padding: "15px 0",
+    }}
+  >
+    <a
+      href="/"
+      style={{
+        textDecoration: "none",
+        color: "#222",
+      }}
+      onClick={() => setMenuOpen(false)}
+    >
+      Home
+    </a>
+
+    <a
+      href="/#products"
+      style={{
+        textDecoration: "none",
+        color: "#222",
+      }}
+      onClick={() => setMenuOpen(false)}
+    >
+      Products
+    </a>
+
+    <a
+      href="/wishlist"
+      style={{
+        textDecoration: "none",
+        color: "#222",
+      }}
+      onClick={() => setMenuOpen(false)}
+    >
+      ❤️ Wishlist
+    </a>
+
+    <a
+      href="/my-orders"
+      style={{
+        textDecoration: "none",
+        color: "#222",
+      }}
+      onClick={() => setMenuOpen(false)}
+    >
+      📦 My Orders
+    </a>
+
+    <a
+      href="/custom-stitching"
+      style={{
+        textDecoration: "none",
+        color: "#8b5e3c",
+        fontWeight: "bold",
+      }}
+      onClick={() => setMenuOpen(false)}
+    >
+      🧵 Custom Stitching
+    </a>
+
+    <a
+      href="/cart"
+      style={{
+        textDecoration: "none",
+        color: "#222",
+      }}
+      onClick={() => setMenuOpen(false)}
+    >
+      🛒 Cart
+    </a>
+
+    <a
+      href="/admin"
+      style={{
+        textDecoration: "none",
+        color: "#222",
+      }}
+      onClick={() => setMenuOpen(false)}
+    >
+      🔐 Admin
+    </a>
+  </div>
+)}
           <a
             href="/"
             style={{

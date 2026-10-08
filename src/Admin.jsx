@@ -6,6 +6,9 @@ function Admin() {
 const [loadingStitching, setLoadingStitching] = useState(true);
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [totalRevenue, setTotalRevenue] = useState(0);
+const [totalCustomers, setTotalCustomers] = useState(0);
+const [pendingOrders, setPendingOrders] = useState(0);
   const [orderItems, setOrderItems] = useState({});
   const [reviews, setReviews] = useState([]);
   const [productImages, setProductImages] = useState([]);
@@ -92,6 +95,26 @@ const [loadingStitching, setLoadingStitching] = useState(true);
     }
 
     setOrders(data || []);
+    const orderData = data || [];
+
+setTotalRevenue(
+  orderData.reduce(
+    (total, order) => total + Number(order.total_amount || 0),
+    0
+  )
+);
+
+setPendingOrders(
+  orderData.filter(
+    (order) => order.status === "Pending"
+  ).length
+);
+
+const uniqueCustomers = new Set(
+  orderData.map((order) => order.phone)
+);
+
+setTotalCustomers(uniqueCustomers.size);
 
     // Fetch all order items
     const { data: items, error: itemsError } = await supabase
@@ -864,6 +887,75 @@ async function deleteProductGalleryImage(id, imageUrl) {
                 <strong>Date:</strong>{" "}
                 {new Date(order.created_at).toLocaleString()}
               </p>
+              <div
+  style={{
+    display: "grid",
+    gridTemplateColumns:
+      "repeat(auto-fit, minmax(180px, 1fr))",
+    gap: "15px",
+    marginBottom: "30px",
+  }}
+>
+  <div
+    style={{
+      padding: "20px",
+      borderRadius: "10px",
+      background: "#f5f5f5",
+      textAlign: "center",
+    }}
+  >
+    <h3>📦 Total Orders</h3>
+    <h2>{orders.length}</h2>
+  </div>
+
+  <div
+    style={{
+      padding: "20px",
+      borderRadius: "10px",
+      background: "#f5f5f5",
+      textAlign: "center",
+    }}
+  >
+    <h3>💰 Total Revenue</h3>
+    <h2>Rs. {totalRevenue}</h2>
+  </div>
+
+  <div
+    style={{
+      padding: "20px",
+      borderRadius: "10px",
+      background: "#f5f5f5",
+      textAlign: "center",
+    }}
+  >
+    <h3>🛍️ Total Products</h3>
+    <h2>{products.length}</h2>
+  </div>
+
+  <div
+    style={{
+      padding: "20px",
+      borderRadius: "10px",
+      background: "#f5f5f5",
+      textAlign: "center",
+    }}
+  >
+    <h3>👥 Customers</h3>
+    <h2>{totalCustomers}</h2>
+  </div>
+
+  <div
+    style={{
+      padding: "20px",
+      borderRadius: "10px",
+      background: "#f5f5f5",
+      textAlign: "center",
+    }}
+  >
+    <h3>⏳ Pending Orders</h3>
+    <h2>{pendingOrders}</h2>
+  </div>
+</div>
             
 
               {/* Ordered Products */}
