@@ -541,105 +541,106 @@ function buyNow() {
               {product.description}
             </p>
 
-            {/* Color Selection */}
+           {/* Color & Size Selection - Clothing Only */}
 
-            <div style={{ marginTop: "25px" }}>
-              <h3>
-                Select Color:{" "}
-                <span style={{ color: "#8b5e3c" }}>
-                  {selectedColor || "None"}
-                </span>
-              </h3>
+{product.category?.toLowerCase() === "clothing" && (
+  <>
+    {/* Color Selection */}
 
-              <div
-                style={{
-                  display: "flex",
-                  gap: "10px",
-                  flexWrap: "wrap",
-                }}
-              >
-                {colors.map((color) => (
-                  <button
-                    key={color}
-                    type="button"
-                    onClick={() =>
-                      setSelectedColor(color)
-                    }
-                    style={{
-                      padding: "10px 16px",
-                      borderRadius: "8px",
-                      border:
-                        selectedColor === color
-                          ? "2px solid #8b5e3c"
-                          : "1px solid #ccc",
-                      background:
-                        selectedColor === color
-                          ? "#f1e2d5"
-                          : "white",
-                      color: "#222",
-                      cursor: "pointer",
-                      fontWeight:
-                        selectedColor === color
-                          ? "bold"
-                          : "normal",
-                    }}
-                  >
-                    
-                    {color}
-                  </button>
-                ))}
-              </div>
-            </div>
+    <div style={{ marginTop: "25px" }}>
+      <h3>
+        Select Color:{" "}
+        <span style={{ color: "#8b5e3c" }}>
+          {selectedColor || "None"}
+        </span>
+      </h3>
 
-            {/* Size Selection */}
+      <div
+        style={{
+          display: "flex",
+          gap: "10px",
+          flexWrap: "wrap",
+        }}
+      >
+        {colors.map((color) => (
+          <button
+            key={color}
+            type="button"
+            onClick={() => setSelectedColor(color)}
+            style={{
+              padding: "10px 16px",
+              borderRadius: "8px",
+              border:
+                selectedColor === color
+                  ? "2px solid #8b5e3c"
+                  : "1px solid #ccc",
+              background:
+                selectedColor === color
+                  ? "#f1e2d5"
+                  : "white",
+              color: "#222",
+              cursor: "pointer",
+              fontWeight:
+                selectedColor === color
+                  ? "bold"
+                  : "normal",
+            }}
+          >
+            {color}
+          </button>
+        ))}
+      </div>
+    </div>
 
-            <div style={{ marginTop: "25px" }}>
-              <h3>
-                Select Size:{" "}
-                <span style={{ color: "#8b5e3c" }}>
-                  {selectedSize || "None"}
-                </span>
-              </h3>
+    {/* Size Selection */}
 
-              <div
-                style={{
-                  display: "flex",
-                  gap: "10px",
-                  flexWrap: "wrap",
-                }}
-              >
-                {sizes.map((size) => (
-                  <button
-                    key={size}
-                    type="button"
-                    onClick={() =>
-                      setSelectedSize(size)
-                    }
-                    style={{
-                      minWidth: "55px",
-                      padding: "10px 14px",
-                      borderRadius: "8px",
-                      border:
-                        selectedSize === size
-                          ? "2px solid #8b5e3c"
-                          : "1px solid #ccc",
-                      background:
-                        selectedSize === size
-                          ? "#f1e2d5"
-                          : "white",
-                      color: "#222",
-                      cursor: "pointer",
-                      fontWeight:
-                        selectedSize === size
-                          ? "bold"
-                          : "normal",
-                    }}
-                  >
-                    {size}
-                  </button>
-                ))}
-              </div>
-            </div>
+    <div style={{ marginTop: "25px" }}>
+      <h3>
+        Select Size:{" "}
+        <span style={{ color: "#8b5e3c" }}>
+          {selectedSize || "None"}
+        </span>
+      </h3>
+
+      <div
+        style={{
+          display: "flex",
+          gap: "10px",
+          flexWrap: "wrap",
+        }}
+      >
+        {sizes.map((size) => (
+          <button
+            key={size}
+            type="button"
+            onClick={() => setSelectedSize(size)}
+            style={{
+              minWidth: "55px",
+              padding: "10px 14px",
+              borderRadius: "8px",
+              border:
+                selectedSize === size
+                  ? "2px solid #8b5e3c"
+                  : "1px solid #ccc",
+              background:
+                selectedSize === size
+                  ? "#f1e2d5"
+                  : "white",
+              color: "#222",
+              cursor: "pointer",
+              fontWeight:
+                selectedSize === size
+                  ? "bold"
+                  : "normal",
+            }}
+          >
+            {size}
+          </button>
+        ))}
+      </div>
+    </div>
+  </>
+)}
 {Number(product.stock) === 0 ? (
   <p
     style={{

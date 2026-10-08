@@ -935,139 +935,120 @@ const [showSaleProducts, setShowSaleProducts] = useState(false);
             }}
           >
             {filteredProducts.map((product) => (
-              <div
-                key={product.id}
-                style={{
-                  background: "white",
-                  borderRadius: "15px",
-                  padding: "15px",
-                  boxShadow:
-                    "0 5px 20px rgba(0,0,0,0.08)",
-                }}
-              >
-                {/* Product Image */}
+  <div
+    key={product.id}
+    style={{
+      background: "white",
+      borderRadius: "15px",
+      padding: "15px",
+      boxShadow: "0 5px 20px rgba(0,0,0,0.08)",
+    }}
+  >
+    {/* Product Image */}
 
-                {product.image_url ? (
-                  <div
-                    onClick={() =>
-                      (window.location.href = `/product?id=${product.id}`)
-                    }
-                    style={{
-                      cursor: "pointer",
-                    }}
-                  >
-                    <img
-                      src={product.image_url}
-                      alt={product.name}
-                      style={{
-                        width: "100%",
-                        height: "240px",
-                        objectFit: "cover",
-                        borderRadius: "12px",
-                      }}
-                    />
-                  </div>
-                ) : (
-                  <div
-                    onClick={() =>
-                      (window.location.href = `/product?id=${product.id}`)
-                    }
-                    style={{
-                      height: "280px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      background: "#f1ece8",
-                      borderRadius: "12px",
-                      fontSize: "50px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    🛍️
-                  </div>
-                )}
+    {product.image_url ? (
+      <div
+        onClick={() =>
+          (window.location.href = `/product?id=${product.id}`)
+        }
+        style={{
+          cursor: "pointer",
+        }}
+      >
+        <img
+          src={product.image_url}
+          alt={product.name}
+          style={{
+            width: "100%",
+            height: "240px",
+            objectFit: "cover",
+            borderRadius: "12px",
+          }}
+        />
+      </div>
+    ) : (
+      <div
+        onClick={() =>
+          (window.location.href = `/product?id=${product.id}`)
+        }
+        style={{
+          height: "280px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "#f1ece8",
+          borderRadius: "12px",
+          fontSize: "50px",
+          cursor: "pointer",
+        }}
+      >
+        🛍️
+      </div>
+    )}
 
-                {/* Product Name */}
+    {/* Product Name */}
 
-                <h3
-                  style={{
-                    marginTop: "15px",
-                    cursor: "pointer",
-                    color: "#8b5e3c",
-                  }}
-                  onClick={() =>
-                    (window.location.href = `/product?id=${product.id}`)
-                  }
-                >
-                  {product.name}
-                </h3>
+    <h3
+      style={{
+        marginTop: "15px",
+        cursor: "pointer",
+        color: "#8b5e3c",
+      }}
+      onClick={() =>
+        (window.location.href = `/product?id=${product.id}`)
+      }
+    >
+      {product.name}
+    </h3>
 
-                {/* Description */}
+    {/* Price */}
 
-                <p>{product.description}</p>
+    <p>
+      <strong>Rs. {product.price}</strong>
+    </p>
 
-                {/* Price */}
+    {/* Wishlist */}
 
-                <p>
-                  <strong>Rs. {product.price}</strong>
-                </p>
+    <button
+      onClick={() => addToWishlist(product)}
+      style={{
+        width: "100%",
+        padding: "10px",
+        marginBottom: "8px",
+        background: "#fff",
+        color: "#b33",
+        border: "1px solid #b33",
+        borderRadius: "8px",
+        cursor: "pointer",
+      }}
+    >
+      ❤️ Add to Wishlist
+    </button>
 
-                {/* Category */}
+    {/* Add to Cart */}
 
-                <p>
-                  Category: {product.category}
-                </p>
-
-                {/* Stock */}
-
-                <p>
-                  {product.stock > 0
-                    ? `In Stock: ${product.stock}`
-                    : "Out of Stock"}
-                </p>
-
-                {/* Wishlist */}
-
-                <button
-                  onClick={() => addToWishlist(product)}
-                  style={{
-                    width: "100%",
-                    padding: "10px",
-                    marginBottom: "8px",
-                    background: "#fff",
-                    color: "#b33",
-                    border: "1px solid #b33",
-                    borderRadius: "8px",
-                    cursor: "pointer",
-                  }}
-                >
-                  ❤️ Add to Wishlist
-                </button>
-
-                {/* Add to Cart */}
-
-                <button
-                  onClick={() => addToCart(product)}
-                  disabled={product.stock <= 0}
-                  style={{
-                    width: "100%",
-                    padding: "12px",
-                    marginTop: "10px",
-                    border: "none",
-                    borderRadius: "8px",
-                    cursor:
-                      product.stock > 0
-                        ? "pointer"
-                        : "not-allowed",
-                    fontWeight: "bold",
-                  }}
-                >
-                  {product.stock > 0
-                    ? "🛒 Add to Cart"
-                    : "Out of Stock"}
-                </button>
-              </div>
-            ))}
+    <button
+      onClick={() => addToCart(product)}
+      disabled={product.stock <= 0}
+      style={{
+        width: "100%",
+        padding: "12px",
+        marginTop: "10px",
+        border: "none",
+        borderRadius: "8px",
+        cursor:
+          product.stock > 0
+            ? "pointer"
+            : "not-allowed",
+        fontWeight: "bold",
+      }}
+    >
+      {product.stock > 0
+        ? "🛒 Add to Cart"
+        : "Out of Stock"}
+    </button>
+  </div>
+))}
           </div>
         )}
       </section>

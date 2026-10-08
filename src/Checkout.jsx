@@ -18,16 +18,24 @@ function Checkout() {
   });
 
   const buyNowItem = JSON.parse(
-  localStorage.getItem("buyNowItem") || "null"
-);
+    localStorage.getItem("buyNowItem") || "null"
+  );
 
-const cart = buyNowItem
-  ? [buyNowItem]
-  : JSON.parse(localStorage.getItem("cart") || "[]");
-  const total = cart.reduce(
+  const cart = buyNowItem
+    ? [buyNowItem]
+    : JSON.parse(localStorage.getItem("cart") || "[]");
+
+  // Product total
+  const productTotal = cart.reduce(
     (sum, item) => sum + Number(item.price) * item.quantity,
     0
   );
+
+  // Fixed delivery/service fee
+  const deliveryFee = 250;
+
+  // Final total
+  const total = productTotal + deliveryFee;
 
   function handleChange(e) {
     setCustomer({
@@ -59,19 +67,35 @@ const cart = buyNowItem
       100
     );
 
-    doc.text(`Total: Rs. ${total}`, 20, 112);
+    doc.text(
+      `Product Total: Rs. ${productTotal}`,
+      20,
+      112
+    );
+
+    doc.text(
+      `Delivery Fee: Rs. ${deliveryFee}`,
+      20,
+      122
+    );
+
+    doc.text(
+      `Final Total: Rs. ${total}`,
+      20,
+      132
+    );
 
     doc.text(
       `Date: ${new Date().toLocaleString()}`,
       20,
-      124
+      144
     );
 
     doc.setFontSize(13);
     doc.text(
       "Thank you for shopping with Stitch & Style!",
       20,
-      145
+      165
     );
 
     doc.save(`Stitch-Style-Order-${order.id}.pdf`);
@@ -116,17 +140,17 @@ const cart = buyNowItem
 
     // Step 2: Save ordered products
     const orderItems = cart.map((item) => ({
-  order_id: order.id,
-  product_id: item.id,
-  product_name: item.name,
-  price: Number(item.price),
-  quantity: item.quantity,
-  image_url: item.image_url || "",
+      order_id: order.id,
+      product_id: item.id,
+      product_name: item.name,
+      price: Number(item.price),
+      quantity: item.quantity,
+      image_url: item.image_url || "",
 
-  // Selected product options
-  selected_color: item.selectedColor || "",
-  selected_size: item.selectedSize || "",
-}));
+      // Selected product options
+      selected_color: item.selectedColor || "",
+      selected_size: item.selectedSize || "",
+    }));
 
     const { error: itemsError } = await supabase
       .from("order_items")
@@ -220,7 +244,18 @@ const cart = buyNowItem
         </p>
 
         <p>
-          Your total is <strong>Rs. {total}</strong>.
+          Product Total:{" "}
+          <strong>Rs. {productTotal}</strong>
+        </p>
+
+        <p>
+          Delivery Fee:{" "}
+          <strong>Rs. {deliveryFee}</strong>
+        </p>
+
+        <p>
+          Final Total:{" "}
+          <strong>Rs. {total}</strong>
         </p>
 
         <p>
@@ -259,7 +294,9 @@ const cart = buyNowItem
             />
 
             <p>
-              <strong>Amount: Rs. {total}</strong>
+              <strong>
+                Amount: Rs. {total}
+              </strong>
             </p>
 
             <p
@@ -306,7 +343,20 @@ const cart = buyNowItem
     >
       <h1>Checkout 🛍️</h1>
 
-      <h2>Total: Rs. {total}</h2>
+      {/* Product Total */}
+      <h3>
+        Product Total: Rs. {productTotal}
+      </h3>
+
+      {/* Delivery Fee */}
+      <h3>
+        Delivery Fee: Rs. {deliveryFee}
+      </h3>
+
+      {/* Final Total */}
+      <h2>
+        Final Total: Rs. {total}
+      </h2>
 
       <form onSubmit={handleSubmit}>
         {/* Full Name */}
@@ -441,7 +491,9 @@ const cart = buyNowItem
               }}
             />
 
-            <h3>Amount: Rs. {total}</h3>
+            <h3>
+              Amount: Rs. {total}
+            </h3>
 
             <p
               style={{
