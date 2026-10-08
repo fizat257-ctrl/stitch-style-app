@@ -268,22 +268,34 @@ function App() {
   }}
 >
   {/* Mobile Menu Button */}
- <button
-  className="mobile-menu-button"
-  onClick={() => setMenuOpen((prev) => !prev)}
+ <div
+  className="mobile-header-actions"
   style={{
-    background: "transparent",
-    border: "none",
-    color: "#222",
-    fontSize: "32px",
-    cursor: "pointer",
-    padding: "8px 15px",
-    textAlign: "left",
-    marginRight: "auto",
+    display: "flex",
+    alignItems: "center",
+    width: "100%",
+    justifyContent: "space-between",
   }}
 >
-  ☰
-</button>
+  {/* Menu Button */}
+  <button
+    className="mobile-menu-button"
+    onClick={() => setMenuOpen((prev) => !prev)}
+    style={{
+      background: "transparent",
+      border: "none",
+      color: "#222",
+      fontSize: "32px",
+      cursor: "pointer",
+      padding: "8px 15px",
+    }}
+  >
+    ☰
+  </button>
+
+  {/* Cart - Outside Dropdown */}
+  
+</div>
 
   {/* Mobile Menu */}
  {menuOpen && (
@@ -446,21 +458,8 @@ function App() {
       ❤️ Wishlist ({wishlist.length})
     </a>
 
-    <a
-      href="/cart"
-      style={{
-        textDecoration: "none",
-        color: "#222",
-        fontWeight: "bold",
-      }}
-    >
-      🛒 Cart (
-      {cart.reduce(
-        (total, item) => total + item.quantity,
-        0
-      )}
-      )
-    </a>
+    
+     
 
     <a
       href="/my-orders"
