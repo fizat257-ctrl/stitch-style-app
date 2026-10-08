@@ -360,8 +360,8 @@ const [showSaleProducts, setShowSaleProducts] = useState(false);
         {/* Featured Products */}
         <button
           onClick={() => {
-            setShowFeatured(true);
-            setShowNewArrivals(false);
+            setShowFeatured(false);
+            setShowNewArrivals(true);
             setShowSaleProducts(false);
             setMenuOpen(false);
           }}
@@ -483,89 +483,147 @@ const [showSaleProducts, setShowSaleProducts] = useState(false);
 
     {/* ================= DESKTOP MENU ================= */}
 
-    <div className="desktop-menu">
+   <div className="desktop-menu">
 
-      <a
-        href="/"
-        style={{
-          textDecoration: "none",
-          color: "#222",
-        }}
-      >
-        Home
-      </a>
+  <a
+    href="/"
+    style={{
+      textDecoration: "none",
+      color: "#222",
+    }}
+  >
+    Home
+  </a>
 
-      <a
-        href="/#products"
-        style={{
-          textDecoration: "none",
-          color: "#222",
-        }}
-      >
-        Products
-      </a>
+  <a
+    href="/#products"
+    style={{
+      textDecoration: "none",
+      color: "#222",
+    }}
+  >
+    Products
+  </a>
 
-      <a
-        href="/custom-stitching"
-        style={{
-          textDecoration: "none",
-          color: "#8b5e3c",
-          fontWeight: "bold",
-        }}
-      >
-        🧵 Custom Stitching
-      </a>
+  {/* FEATURED PRODUCTS */}
+  <button
+    onClick={() => {
+      setShowFeatured(true);
+      setShowNewArrivals(false);
+      setShowSaleProducts(false);
+    }}
+    style={{
+      background: "none",
+      border: "none",
+      padding: "8px",
+      fontSize: "16px",
+      cursor: "pointer",
+      color: "#222",
+    }}
+  >
+    ⭐ Featured Products
+  </button>
 
-      <a
-        href="/wishlist"
-        style={{
-          textDecoration: "none",
-          color: "#222",
-          fontWeight: "bold",
-        }}
-      >
-        ❤️ Wishlist ({wishlist.length})
-      </a>
+  {/* NEW ARRIVALS */}
+  <button
+    onClick={() => {
+      setShowFeatured(false);
+      setShowNewArrivals(true);
+      setShowSaleProducts(false);
+    }}
+    style={{
+      background: "none",
+      border: "none",
+      padding: "8px",
+      fontSize: "16px",
+      cursor: "pointer",
+      color: "#222",
+    }}
+  >
+    🆕 New Arrivals
+  </button>
 
-      {/* CART - DESKTOP */}
-      <a
-        href="/cart"
-        style={{
-          textDecoration: "none",
-          color: "#222",
-          fontWeight: "bold",
-          whiteSpace: "nowrap",
-        }}
-      >
-        🛒 Cart (
-        {cart.reduce(
-          (total, item) => total + item.quantity,
-          0
-        )}
-        )
-      </a>
+  {/* SALE PRODUCTS */}
+  <button
+    onClick={() => {
+      setShowFeatured(false);
+      setShowNewArrivals(false);
+      setShowSaleProducts(true);
+    }}
+    style={{
+      background: "none",
+      border: "none",
+      padding: "8px",
+      fontSize: "16px",
+      cursor: "pointer",
+      color: "#222",
+    }}
+  >
+    🔥 Sale Products
+  </button>
 
-      <a
-        href="/my-orders"
-        style={{
-          textDecoration: "none",
-          color: "#222",
-          fontWeight: "bold",
-        }}
-      >
-        📦 My Orders
-      </a>
+  <a
+    href="/custom-stitching"
+    style={{
+      textDecoration: "none",
+      color: "#8b5e3c",
+      fontWeight: "bold",
+    }}
+  >
+    🧵 Custom Stitching
+  </a>
 
-      <a
-        href="/admin-login"
-        style={{
-          textDecoration: "none",
-          color: "#222",
-        }}
-      >
-        Admin
-      </a>
-    </div>
+  <a
+    href="/wishlist"
+    style={{
+      textDecoration: "none",
+      color: "#222",
+      fontWeight: "bold",
+    }}
+  >
+    ❤️ Wishlist ({wishlist.length})
+  </a>
+
+  {/* CART - DESKTOP */}
+  <a
+    href="/cart"
+    style={{
+      textDecoration: "none",
+      color: "#222",
+      fontWeight: "bold",
+      whiteSpace: "nowrap",
+    }}
+  >
+    🛒 Cart (
+    {cart.reduce(
+      (total, item) => total + item.quantity,
+      0
+    )}
+    )
+  </a>
+
+  <a
+    href="/my-orders"
+    style={{
+      textDecoration: "none",
+      color: "#222",
+      fontWeight: "bold",
+    }}
+  >
+    📦 My Orders
+  </a>
+
+  <a
+    href="/admin-login"
+    style={{
+      textDecoration: "none",
+      color: "#222",
+    }}
+  >
+    Admin
+  </a>
+
+</div>
   </nav>
 </header>
 
@@ -644,7 +702,7 @@ const [showSaleProducts, setShowSaleProducts] = useState(false);
           )}
 
           <h3>{product.name}</h3>
-        {showNewArrivals && (
+       {showNewArrivals && (
   <section style={{ padding: "40px 20px" }}>
     <h2
       style={{
@@ -655,51 +713,79 @@ const [showSaleProducts, setShowSaleProducts] = useState(false);
       🆕 New Arrivals
     </h2>
 
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-        gap: "20px",
-        maxWidth: "1200px",
-        margin: "0 auto",
-      }}
-    >
-      {products.slice(0, 6).map((product) => (
-        <div
-          key={product.id}
-          onClick={() =>
-            (window.location.href = `/product?id=${product.id}`)
-          }
-          style={{
-            border: "1px solid #ddd",
-            borderRadius: "10px",
-            padding: "15px",
-            cursor: "pointer",
-          }}
-        >
-          {product.image_url && (
-            <img
-              src={product.image_url}
-              alt={product.name}
-              style={{
-                width: "100%",
-                height: "250px",
-                objectFit: "cover",
-                borderRadius: "8px",
-              }}
-            />
-          )}
+    {products.length === 0 ? (
+      <p
+        style={{
+          textAlign: "center",
+          color: "#777",
+          fontSize: "18px",
+        }}
+      >
+        No products available.
+      </p>
+    ) : (
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns:
+            "repeat(auto-fit, minmax(220px, 1fr))",
+          gap: "20px",
+          maxWidth: "1200px",
+          margin: "0 auto",
+        }}
+      >
+        {products.slice(0, 6).map((product) => (
+          <div
+            key={product.id}
+            onClick={() =>
+              (window.location.href = `/product?id=${product.id}`)
+            }
+            style={{
+              border: "1px solid #ddd",
+              borderRadius: "10px",
+              padding: "15px",
+              cursor: "pointer",
+            }}
+          >
+            {product.image_url ? (
+              <img
+                src={product.image_url}
+                alt={product.name}
+                style={{
+                  width: "100%",
+                  height: "250px",
+                  objectFit: "cover",
+                  borderRadius: "8px",
+                }}
+              />
+            ) : (
+              <div
+                style={{
+                  width: "100%",
+                  height: "250px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: "#f1ece8",
+                  borderRadius: "8px",
+                  fontSize: "50px",
+                }}
+              >
+                🛍️
+              </div>
+            )}
 
-          <h3>{product.name}</h3>
+            <h3>{product.name}</h3>
 
-          <p>Rs. {product.price}</p>
+            <p>Rs. {product.price}</p>
 
-          <p style={{ color: "#777" }}>
-            {product.category}
-          </p>
-        </div>
-      ))}
-    </div>
+            <p style={{ color: "#777" }}>
+              {product.category}
+            </p>
+          </div>
+        ))}
+      </div>
+    )}
   </section>
 )}
           {showSaleProducts && (

@@ -393,16 +393,18 @@ async function deleteProductGalleryImage(id, imageUrl) {
     }
 
     const { error } = await supabase.from("products").insert([
-      {
-        name,
-        description,
-        price: Number(price),
-        category,
-        stock: Number(stock),
-        image_url: imageUrl,
-        video_url: videoUrl,
-      },
-    ]);
+  {
+    name,
+    description,
+    price: Number(price),
+    category,
+    stock: Number(stock),
+     discount: Number(discount),
+    image_url: imageUrl,
+    video_url: videoUrl,
+   
+  },
+]);
 
     if (error) {
       console.error(error);
