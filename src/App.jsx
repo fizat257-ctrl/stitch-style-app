@@ -11,6 +11,7 @@ import CustomStitching from "./CustomStitching";
 
 function App() {
   const [products, setProducts] = useState([]);
+  const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
@@ -83,6 +84,9 @@ function App() {
     }
 
     setProducts(data || []);
+    setFeaturedProducts(
+  (data || []).filter((product) => product.featured === true)
+);
     setLoading(false);
   }
 
@@ -340,6 +344,64 @@ function App() {
           Discover beautiful fashion, jewelry, makeup, and more — all in one place.
         </p>
       </section>
+      {featuredProducts.length > 0 && (
+  <section style={{ padding: "40px 20px" }}>
+    <h2
+      style={{
+        textAlign: "center",
+        marginBottom: "25px",
+      }}
+    >
+      ⭐ Featured Products
+    </h2>
+
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+        gap: "20px",
+        maxWidth: "1200px",
+        margin: "0 auto",
+      }}
+    >
+      {featuredProducts.map((product) => (
+        <div
+          key={product.id}
+          onClick={() =>
+            (window.location.href = `/product?id=${product.id}`)
+          }
+          style={{
+            border: "1px solid #ddd",
+            borderRadius: "10px",
+            padding: "15px",
+            cursor: "pointer",
+          }}
+        >
+          {product.image_url && (
+            <img
+              src={product.image_url}
+              alt={product.name}
+              style={{
+                width: "100%",
+                height: "250px",
+                objectFit: "cover",
+                borderRadius: "8px",
+              }}
+            />
+          )}
+
+          <h3>{product.name}</h3>
+
+          <p>Rs. {product.price}</p>
+
+          <p style={{ color: "#777" }}>
+            {product.category}
+          </p>
+        </div>
+      ))}
+    </div>
+  </section>
+)}
 
       {/* Products */}
 

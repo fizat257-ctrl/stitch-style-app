@@ -15,6 +15,7 @@ const [loadingStitching, setLoadingStitching] = useState(true);
   const [price, setPrice] = useState("");
   const [category, setCategory] = useState("Clothing");
   const [stock, setStock] = useState("");
+  const [featured, setFeatured] = useState(false);
   const [imageFile, setImageFile] = useState(null);
   const [videoFile, setVideoFile] = useState(null);
 
@@ -423,6 +424,7 @@ async function deleteProductGalleryImage(id, imageUrl) {
     setPrice(product.price);
     setCategory(product.category);
     setStock(product.stock);
+    setFeatured(product.featured || false);
     setImageFile(null);
 
     window.scrollTo({
@@ -452,6 +454,7 @@ async function deleteProductGalleryImage(id, imageUrl) {
       price: Number(price),
       category,
       stock: Number(stock),
+      featured: featured,
     };
 
     if (imageUrl) {
@@ -539,6 +542,7 @@ async function deleteProductGalleryImage(id, imageUrl) {
     setPrice("");
     setCategory("Clothing");
     setStock("");
+    setFeatured(false);
     setImageFile(null);
     setVideoFile(null);
   }
@@ -694,6 +698,17 @@ async function deleteProductGalleryImage(id, imageUrl) {
 <option value="Bags">Bags</option>
           </select>
         </div>
+        <div style={{ marginBottom: "15px" }}>
+  <label>
+    <input
+      type="checkbox"
+      checked={featured}
+      onChange={(e) => setFeatured(e.target.checked)}
+      style={{ marginRight: "8px" }}
+    />
+    ⭐ Featured Product
+  </label>
+</div>
 
         <div style={{ marginBottom: "15px" }}>
           <label>Stock</label>
