@@ -235,24 +235,34 @@ function App() {
       flex-wrap: wrap;
     }
 
-    .mobile-menu-button {
+    .mobile-header-actions {
       display: none !important;
-      color: #222;
     }
 
-    
+    .mobile-menu-button {
+      display: none !important;
+    }
 
     @media (max-width: 768px) {
       .desktop-menu {
         display: none !important;
       }
 
+      .mobile-header-actions {
+        display: flex !important;
+        width: 100%;
+        align-items: center;
+        justify-content: space-between;
+      }
+
       .mobile-menu-button {
         display: block !important;
+        background: transparent;
+        border: none;
         color: #222 !important;
         font-size: 32px !important;
-        width: 100%;
-        text-align: left;
+        cursor: pointer;
+        padding: 8px 15px;
       }
     }
   `}
@@ -267,145 +277,127 @@ function App() {
     width: "100%",
   }}
 >
-  {/* Mobile Menu Button */}
- <div
-  className="mobile-header-actions"
-  style={{
-    display: "flex",
-    alignItems: "center",
-    width: "100%",
-    justifyContent: "space-between",
-  }}
->
-  {/* Menu Button */}
-  <button
-    className="mobile-menu-button"
-    onClick={() => setMenuOpen((prev) => !prev)}
-    style={{
-      background: "transparent",
-      border: "none",
-      color: "#222",
-      fontSize: "32px",
-      cursor: "pointer",
-      padding: "8px 15px",
-    }}
-  >
-    ☰
-  </button>
+  {/* ================= MOBILE HEADER ================= */}
+  <div className="mobile-header-actions">
+    {/* Menu Button */}
+    <button
+      className="mobile-menu-button"
+      onClick={() => setMenuOpen((prev) => !prev)}
+    >
+      ☰
+    </button>
 
-  {/* Cart - Outside Dropdown */}
-  
-</div>
+    {/* Cart - Outside Dropdown */}
+    <a
+      href="/cart"
+      style={{
+        textDecoration: "none",
+        color: "#222",
+        fontWeight: "bold",
+        fontSize: "18px",
+        padding: "8px 15px",
+        whiteSpace: "nowrap",
+      }}
+    >
+      🛒 Cart (
+      {cart.reduce(
+        (total, item) => total + item.quantity,
+        0
+      )}
+      )
+    </a>
+  </div>
 
-  {/* Mobile Menu */}
- {menuOpen && (
-  <div
-    className="mobile-menu"
-    style={{
-      width: "100%",
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "flex-start",
-      gap: "14px",
-      padding: "15px 20px",
-      boxSizing: "border-box",
-    }}
-  >
-     <a
-  href="/"
-  style={{
-    display: "block",
-    width: "100%",
-    textDecoration: "none",
-    color: "#222",
-  }}
+  {/* ================= MOBILE DROPDOWN ================= */}
+  {menuOpen && (
+    <div
+      className="mobile-menu"
+      style={{
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-start",
+        gap: "14px",
+        padding: "15px 20px",
+        boxSizing: "border-box",
+      }}
+    >
+      <a
+        href="/"
+        style={{
+          display: "block",
+          width: "100%",
+          textDecoration: "none",
+          color: "#222",
+        }}
         onClick={() => setMenuOpen(false)}
       >
         Home
       </a>
 
       <a
-  href="/#products"
-  style={{
-    display: "block",
-    width: "100%",
-    textDecoration: "none",
-    color: "#222",
-  }}
+        href="/#products"
+        style={{
+          display: "block",
+          width: "100%",
+          textDecoration: "none",
+          color: "#222",
+        }}
         onClick={() => setMenuOpen(false)}
       >
         Products
       </a>
 
       <a
-  href="/wishlist"
-  style={{
-    display: "block",
-    width: "100%",
-    textDecoration: "none",
-    color: "#222",
-    fontWeight: "bold",
-  }}
+        href="/wishlist"
+        style={{
+          display: "block",
+          width: "100%",
+          textDecoration: "none",
+          color: "#222",
+          fontWeight: "bold",
+        }}
         onClick={() => setMenuOpen(false)}
       >
         ❤️ Wishlist ({wishlist.length})
       </a>
 
       <a
-  href="/my-orders"
-  style={{
-    display: "block",
-    width: "100%",
-    textDecoration: "none",
-    color: "#222",
-    fontWeight: "bold",
-  }}
+        href="/my-orders"
+        style={{
+          display: "block",
+          width: "100%",
+          textDecoration: "none",
+          color: "#222",
+          fontWeight: "bold",
+        }}
         onClick={() => setMenuOpen(false)}
       >
         📦 My Orders
       </a>
 
       <a
-  href="/custom-stitching"
-  style={{
-    display: "block",
-    width: "100%",
-    textDecoration: "none",
-    color: "#8b5e3c",
-    fontWeight: "bold",
-  }}
+        href="/custom-stitching"
+        style={{
+          display: "block",
+          width: "100%",
+          textDecoration: "none",
+          color: "#8b5e3c",
+          fontWeight: "bold",
+        }}
         onClick={() => setMenuOpen(false)}
       >
         🧵 Custom Stitching
       </a>
 
       <a
-  href="/cart"
-  style={{
-    display: "block",
-    width: "100%",
-    textDecoration: "none",
-    color: "#222",
-    fontWeight: "bold",
-  }}
-        onClick={() => setMenuOpen(false)}
-      >
-        🛒 Cart (
-        {cart.reduce(
-          (total, item) => total + item.quantity,
-          0
-        )}
-        )
-      </a>
-
-     <a
-  href="/admin-login"
-  style={{
-    display: "block",
-    width: "100%",
-    textDecoration: "none",
-    color: "#222",
-  }}
+        href="/admin-login"
+        style={{
+          display: "block",
+          width: "100%",
+          textDecoration: "none",
+          color: "#222",
+        }}
         onClick={() => setMenuOpen(false)}
       >
         Admin
@@ -413,7 +405,7 @@ function App() {
     </div>
   )}
 
-  {/* Desktop Menu */}
+  {/* ================= DESKTOP MENU ================= */}
   <div className="desktop-menu">
     <a
       href="/"
@@ -435,7 +427,6 @@ function App() {
       Products
     </a>
 
-    {/* Custom Stitching */}
     <a
       href="/custom-stitching"
       style={{
@@ -458,8 +449,23 @@ function App() {
       ❤️ Wishlist ({wishlist.length})
     </a>
 
-    
-     
+    {/* CART - DESKTOP */}
+    <a
+      href="/cart"
+      style={{
+        textDecoration: "none",
+        color: "#222",
+        fontWeight: "bold",
+        whiteSpace: "nowrap",
+      }}
+    >
+      🛒 Cart (
+      {cart.reduce(
+        (total, item) => total + item.quantity,
+        0
+      )}
+      )
+    </a>
 
     <a
       href="/my-orders"
