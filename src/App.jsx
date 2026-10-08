@@ -485,44 +485,7 @@ const [showSaleProducts, setShowSaleProducts] = useState(false);
     ⭐ Featured Products
   </button>
 
-  {/* NEW ARRIVALS */}
-  <button
-    onClick={() => {
-      setShowFeatured(false);
-      setShowNewArrivals(true);
-      setShowSaleProducts(false);
-    }}
-    style={{
-      background: "none",
-      border: "none",
-      padding: "8px",
-      fontSize: "16px",
-      cursor: "pointer",
-      color: "#222",
-    }}
-  >
-    🆕 New Arrivals
-  </button>
-
-  {/* SALE PRODUCTS */}
-  <button
-    onClick={() => {
-      setShowFeatured(false);
-      setShowNewArrivals(false);
-      setShowSaleProducts(true);
-    }}
-    style={{
-      background: "none",
-      border: "none",
-      padding: "8px",
-      fontSize: "16px",
-      cursor: "pointer",
-      color: "#222",
-    }}
-  >
-    🔥 Sale Products
-  </button>
-
+  
   <a
     href="/custom-stitching"
     style={{
