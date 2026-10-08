@@ -451,6 +451,18 @@ function MyOrders() {
                         Size:{" "}
                         {item.selected_size}
                       </p>
+                      
+                    )}
+
+                    {item.selected_fabric && (
+                      <p
+                        style={{
+                          margin: "4px 0",
+                        }}
+                      >
+                        Fabric:{" "}
+                        {item.selected_fabric}
+                      </p>
                     )}
                   </div>
                 </div>

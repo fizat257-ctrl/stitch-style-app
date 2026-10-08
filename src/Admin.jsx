@@ -1032,6 +1032,11 @@ async function deleteProductGalleryImage(id, imageUrl) {
 <p style={{ margin: "5px 0" }}>
   Size: {item.selected_size || "N/A"}
 </p>
+{item.selected_fabric && (
+  <p>
+    <strong>Fabric:</strong> {item.selected_fabric}
+  </p>
+)}
 
                           <p
                             style={{
@@ -1143,6 +1148,10 @@ async function deleteProductGalleryImage(id, imageUrl) {
           <strong>Size:</strong>{" "}
           {request.size || "N/A"}
         </p>
+        <p>
+  <strong>Fabric:</strong>{" "}
+  {request.fabric_type || "N/A"}
+</p>
 
         <p>
           <strong>Measurements:</strong><br />

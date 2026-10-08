@@ -150,6 +150,7 @@ function Checkout() {
       // Selected product options
       selected_color: item.selectedColor || "",
       selected_size: item.selectedSize || "",
+      selected_fabric: item.selectedFabric || "",
     }));
 
     const { error: itemsError } = await supabase

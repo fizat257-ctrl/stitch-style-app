@@ -14,6 +14,7 @@ function ProductDetails() {
   // Color and Size Selection
   const [selectedColor, setSelectedColor] = useState("");
   const [selectedSize, setSelectedSize] = useState("");
+  const [selectedFabric, setSelectedFabric] = useState("");
 
   const [customerName, setCustomerName] = useState("");
   const [rating, setRating] = useState(5);
@@ -184,13 +185,14 @@ if (!relatedError) {
             quantity: 1,
             selectedColor: selectedColor,
             selectedSize: selectedSize,
+            selectedFabric: selectedFabric,
           },
         ])
       );
     }
 
     alert(
-      `🛒 Product added to cart!\nColor: ${selectedColor}\nSize: ${selectedSize}`
+      `🛒 Product added to cart!\nColor: ${selectedColor}\nSize: ${selectedSize}\nFabric: ${selectedFabric}`
     );
   }
 
@@ -640,6 +642,65 @@ function buyNow() {
       </div>
     </div>
   </>
+)}
+{/* Fabric Selection - Clothing Only */}
+
+{product.category?.toLowerCase() === "clothing" && (
+  <div style={{ marginTop: "25px" }}>
+    <h3>
+      Select Fabric:{" "}
+      <span style={{ color: "#8b5e3c" }}>
+        {selectedFabric || "None"}
+      </span>
+    </h3>
+
+    <div
+      style={{
+        display: "flex",
+        gap: "10px",
+        flexWrap: "wrap",
+      }}
+    >
+      {[
+        "Cotton",
+        "Lawn",
+        "Linen",
+        "Silk",
+        "Chiffon",
+        "Organza",
+        "Velvet",
+        "Khaddar",
+        "Denim",
+        "Other",
+      ].map((fabric) => (
+        <button
+          key={fabric}
+          type="button"
+          onClick={() => setSelectedFabric(fabric)}
+          style={{
+            padding: "10px 16px",
+            borderRadius: "8px",
+            border:
+              selectedFabric === fabric
+                ? "2px solid #8b5e3c"
+                : "1px solid #ccc",
+            background:
+              selectedFabric === fabric
+                ? "#f1e2d5"
+                : "white",
+            color: "#222",
+            cursor: "pointer",
+            fontWeight:
+              selectedFabric === fabric
+                ? "bold"
+                : "normal",
+          }}
+        >
+          {fabric}
+        </button>
+      ))}
+    </div>
+  </div>
 )}
 {Number(product.stock) === 0 ? (
   <p

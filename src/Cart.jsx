@@ -140,6 +140,11 @@ function Cart() {
                     {item.selectedSize}
                   </p>
                 )}
+                {item.selectedFabric && (
+  <p>
+    <strong>Fabric:</strong> {item.selectedFabric}
+  </p>
+)}
 
                 <p>
                   Available Stock: {item.stock}
