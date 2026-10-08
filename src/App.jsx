@@ -236,7 +236,8 @@ function App() {
     }
 
     .mobile-menu-button {
-      display: none;
+      display: none !important;
+      color: #222;
     }
 
     .mobile-menu {
@@ -250,10 +251,10 @@ function App() {
 
       .mobile-menu-button {
         display: block !important;
-      }
-
-      .mobile-menu {
-        display: flex;
+        color: #222 !important;
+        font-size: 32px !important;
+        width: 100%;
+        text-align: left;
       }
     }
   `}
@@ -268,19 +269,21 @@ function App() {
   }}
 >
   {/* Mobile Menu Button */}
-  <button
-    className="mobile-menu-button"
-    onClick={() => setMenuOpen(!menuOpen)}
-    style={{
-      background: "none",
-      border: "none",
-      fontSize: "28px",
-      cursor: "pointer",
-      padding: "5px",
-    }}
-  >
-    ☰
-  </button>
+ <button
+  className="mobile-menu-button"
+  onClick={() => setMenuOpen(!menuOpen)}
+  style={{
+    background: "transparent",
+    border: "none",
+    color: "#222",
+    fontSize: "32px",
+    cursor: "pointer",
+    padding: "8px 15px",
+    textAlign: "left",
+  }}
+>
+  ☰
+</button>
 
   {/* Mobile Menu */}
   {menuOpen && (
