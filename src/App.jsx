@@ -230,9 +230,16 @@ function App() {
   {`
     .desktop-menu {
       display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
     }
 
     .mobile-menu-button {
+      display: none;
+    }
+
+    .mobile-menu {
       display: none;
     }
 
@@ -244,48 +251,144 @@ function App() {
       .mobile-menu-button {
         display: block !important;
       }
+
+      .mobile-menu {
+        display: flex;
+      }
     }
   `}
 </style>
 
-        <nav
-          style={{
-            display: "flex",
-            gap: "12px",
-            alignItems: "center",
-            flexWrap: "wrap",
-          }}
-        >
-         <button
-  className="mobile-menu-button"
-  onClick={() => setMenuOpen(!menuOpen)}
+<nav
   style={{
-    background: "none",
-    border: "none",
-    fontSize: "28px",
-    cursor: "pointer",
+    display: "flex",
+    gap: "12px",
+    alignItems: "center",
+    flexWrap: "wrap",
   }}
 >
-  ☰
-</button>
-<div className="desktop-menu"></div>
-{menuOpen && (
-  <div
+  {/* Mobile Menu Button */}
+  <button
+    className="mobile-menu-button"
+    onClick={() => setMenuOpen(!menuOpen)}
     style={{
-      width: "100%",
-      display: "flex",
-      flexDirection: "column",
-      gap: "12px",
-      padding: "15px 0",
+      background: "none",
+      border: "none",
+      fontSize: "28px",
+      cursor: "pointer",
+      padding: "5px",
     }}
   >
+    ☰
+  </button>
+
+  {/* Mobile Menu */}
+  {menuOpen && (
+    <div
+      className="mobile-menu"
+      style={{
+        width: "100%",
+        flexDirection: "column",
+        gap: "12px",
+        padding: "15px 0",
+      }}
+    >
+      <a
+        href="/"
+        style={{
+          textDecoration: "none",
+          color: "#222",
+        }}
+        onClick={() => setMenuOpen(false)}
+      >
+        Home
+      </a>
+
+      <a
+        href="/#products"
+        style={{
+          textDecoration: "none",
+          color: "#222",
+        }}
+        onClick={() => setMenuOpen(false)}
+      >
+        Products
+      </a>
+
+      <a
+        href="/wishlist"
+        style={{
+          textDecoration: "none",
+          color: "#222",
+          fontWeight: "bold",
+        }}
+        onClick={() => setMenuOpen(false)}
+      >
+        ❤️ Wishlist ({wishlist.length})
+      </a>
+
+      <a
+        href="/my-orders"
+        style={{
+          textDecoration: "none",
+          color: "#222",
+          fontWeight: "bold",
+        }}
+        onClick={() => setMenuOpen(false)}
+      >
+        📦 My Orders
+      </a>
+
+      <a
+        href="/custom-stitching"
+        style={{
+          textDecoration: "none",
+          color: "#8b5e3c",
+          fontWeight: "bold",
+        }}
+        onClick={() => setMenuOpen(false)}
+      >
+        🧵 Custom Stitching
+      </a>
+
+      <a
+        href="/cart"
+        style={{
+          textDecoration: "none",
+          color: "#222",
+          fontWeight: "bold",
+        }}
+        onClick={() => setMenuOpen(false)}
+      >
+        🛒 Cart (
+        {cart.reduce(
+          (total, item) => total + item.quantity,
+          0
+        )}
+        )
+      </a>
+
+      <a
+        href="/admin-login"
+        style={{
+          textDecoration: "none",
+          color: "#222",
+        }}
+        onClick={() => setMenuOpen(false)}
+      >
+        Admin
+      </a>
+    </div>
+  )}
+
+  {/* Desktop Menu */}
+  <div className="desktop-menu">
     <a
       href="/"
       style={{
         textDecoration: "none",
         color: "#222",
       }}
-      onClick={() => setMenuOpen(false)}
     >
       Home
     </a>
@@ -296,33 +399,11 @@ function App() {
         textDecoration: "none",
         color: "#222",
       }}
-      onClick={() => setMenuOpen(false)}
     >
       Products
     </a>
 
-    <a
-      href="/wishlist"
-      style={{
-        textDecoration: "none",
-        color: "#222",
-      }}
-      onClick={() => setMenuOpen(false)}
-    >
-      ❤️ Wishlist
-    </a>
-
-    <a
-      href="/my-orders"
-      style={{
-        textDecoration: "none",
-        color: "#222",
-      }}
-      onClick={() => setMenuOpen(false)}
-    >
-      📦 My Orders
-    </a>
-
+    {/* Custom Stitching */}
     <a
       href="/custom-stitching"
       style={{
@@ -330,9 +411,19 @@ function App() {
         color: "#8b5e3c",
         fontWeight: "bold",
       }}
-      onClick={() => setMenuOpen(false)}
     >
       🧵 Custom Stitching
+    </a>
+
+    <a
+      href="/wishlist"
+      style={{
+        textDecoration: "none",
+        color: "#222",
+        fontWeight: "bold",
+      }}
+    >
+      ❤️ Wishlist ({wishlist.length})
     </a>
 
     <a
@@ -340,104 +431,39 @@ function App() {
       style={{
         textDecoration: "none",
         color: "#222",
+        fontWeight: "bold",
       }}
-      onClick={() => setMenuOpen(false)}
     >
-      🛒 Cart
+      🛒 Cart (
+      {cart.reduce(
+        (total, item) => total + item.quantity,
+        0
+      )}
+      )
     </a>
 
     <a
-      href="/admin"
+      href="/my-orders"
+      style={{
+        textDecoration: "none",
+        color: "#222",
+        fontWeight: "bold",
+      }}
+    >
+      📦 My Orders
+    </a>
+
+    <a
+      href="/admin-login"
       style={{
         textDecoration: "none",
         color: "#222",
       }}
-      onClick={() => setMenuOpen(false)}
     >
-      🔐 Admin
+      Admin
     </a>
   </div>
-)}
-          <a
-            href="/"
-            style={{
-              textDecoration: "none",
-              color: "#222",
-            }}
-          >
-            Home
-          </a>
-
-          <a
-            href="/#products"
-            style={{
-              textDecoration: "none",
-              color: "#222",
-            }}
-          >
-            Products
-          </a>
-
-          {/* Custom Stitching */}
-          <a
-            href="/custom-stitching"
-            style={{
-              textDecoration: "none",
-              color: "#8b5e3c",
-              fontWeight: "bold",
-            }}
-          >
-            🧵 Custom Stitching
-          </a>
-
-          <a
-            href="/wishlist"
-            style={{
-              textDecoration: "none",
-              color: "#222",
-              fontWeight: "bold",
-            }}
-          >
-            ❤️ Wishlist ({wishlist.length})
-          </a>
-
-          <a
-            href="/cart"
-            style={{
-              textDecoration: "none",
-              color: "#222",
-              fontWeight: "bold",
-            }}
-          >
-            🛒 Cart (
-            {cart.reduce(
-              (total, item) => total + item.quantity,
-              0
-            )}
-            )
-          </a>
-
-          <a
-            href="/my-orders"
-            style={{
-              textDecoration: "none",
-              color: "#222",
-              fontWeight: "bold",
-            }}
-          >
-            📦 My Orders
-          </a>
-
-          <a
-            href="/admin-login"
-            style={{
-              textDecoration: "none",
-              color: "#222",
-            }}
-          >
-            Admin
-          </a>
-        </nav>
+</nav>
       </header>
 
       {/* Hero */}
