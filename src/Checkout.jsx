@@ -194,13 +194,19 @@ function Checkout() {
 
     // Step 3: Reduce product stock
     for (const item of cart) {
-      const { error: stockError } = await supabase.rpc(
-        "reduce_product_stock",
-        {
-          p_product_id: item.id,
-          p_quantity: item.quantity,
-        }
-      );
+  console.log("STOCK DEBUG:", {
+    productId: item.id,
+    productName: item.name,
+    quantity: item.quantity,
+  });
+
+  const { error: stockError } = await supabase.rpc(
+    "reduce_product_stock",
+    {
+      p_product_id: item.id,
+      p_quantity: item.quantity,
+    }
+  );
 
       if (stockError) {
         console.error(
