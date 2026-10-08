@@ -644,7 +644,7 @@ const [showSaleProducts, setShowSaleProducts] = useState(false);
           )}
 
           <h3>{product.name}</h3>
-         {showNewArrivals && (
+        {showNewArrivals && (
   <section style={{ padding: "40px 20px" }}>
     <h2
       style={{
@@ -664,48 +664,41 @@ const [showSaleProducts, setShowSaleProducts] = useState(false);
         margin: "0 auto",
       }}
     >
-      {products
-        .slice()
-        .sort(
-          (a, b) =>
-            new Date(b.created_at) - new Date(a.created_at)
-        )
-        .slice(0, 6)
-        .map((product) => (
-          <div
-            key={product.id}
-            onClick={() =>
-              (window.location.href = `/product?id=${product.id}`)
-            }
-            style={{
-              border: "1px solid #ddd",
-              borderRadius: "10px",
-              padding: "15px",
-              cursor: "pointer",
-            }}
-          >
-            {product.image_url && (
-              <img
-                src={product.image_url}
-                alt={product.name}
-                style={{
-                  width: "100%",
-                  height: "250px",
-                  objectFit: "cover",
-                  borderRadius: "8px",
-                }}
-              />
-            )}
+      {products.slice(0, 6).map((product) => (
+        <div
+          key={product.id}
+          onClick={() =>
+            (window.location.href = `/product?id=${product.id}`)
+          }
+          style={{
+            border: "1px solid #ddd",
+            borderRadius: "10px",
+            padding: "15px",
+            cursor: "pointer",
+          }}
+        >
+          {product.image_url && (
+            <img
+              src={product.image_url}
+              alt={product.name}
+              style={{
+                width: "100%",
+                height: "250px",
+                objectFit: "cover",
+                borderRadius: "8px",
+              }}
+            />
+          )}
 
-            <h3>{product.name}</h3>
+          <h3>{product.name}</h3>
 
-            <p>Rs. {product.price}</p>
+          <p>Rs. {product.price}</p>
 
-            <p style={{ color: "#777" }}>
-              {product.category}
-            </p>
-          </div>
-        ))}
+          <p style={{ color: "#777" }}>
+            {product.category}
+          </p>
+        </div>
+      ))}
     </div>
   </section>
 )}
