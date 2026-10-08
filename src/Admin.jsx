@@ -16,6 +16,7 @@ const [loadingStitching, setLoadingStitching] = useState(true);
   const [category, setCategory] = useState("Clothing");
   const [stock, setStock] = useState("");
   const [featured, setFeatured] = useState(false);
+  const [discount, setDiscount] = useState(0);
   const [imageFile, setImageFile] = useState(null);
   const [videoFile, setVideoFile] = useState(null);
 
@@ -424,6 +425,7 @@ async function deleteProductGalleryImage(id, imageUrl) {
     setPrice(product.price);
     setCategory(product.category);
     setStock(product.stock);
+    setDiscount(product.discount || 0);
     setFeatured(product.featured || false);
     setImageFile(null);
 
@@ -455,6 +457,7 @@ async function deleteProductGalleryImage(id, imageUrl) {
       category,
       stock: Number(stock),
       featured: featured,
+      discount: Number(discount),
     };
 
     if (imageUrl) {
@@ -543,6 +546,7 @@ async function deleteProductGalleryImage(id, imageUrl) {
     setCategory("Clothing");
     setStock("");
     setFeatured(false);
+    setDiscount(0);
     setImageFile(null);
     setVideoFile(null);
   }
@@ -708,6 +712,24 @@ async function deleteProductGalleryImage(id, imageUrl) {
     />
     ⭐ Featured Product
   </label>
+</div>
+<div style={{ marginBottom: "15px" }}>
+  <label>Discount (%)</label>
+  <br />
+
+  <input
+    type="number"
+    min="0"
+    max="100"
+    value={discount}
+    onChange={(e) => setDiscount(e.target.value)}
+    placeholder="Enter discount percentage"
+    style={{
+      width: "100%",
+      padding: "10px",
+      marginTop: "5px",
+    }}
+  />
 </div>
 
         <div style={{ marginBottom: "15px" }}>

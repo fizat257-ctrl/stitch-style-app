@@ -9,6 +9,7 @@ function ProductDetails() {
   const [productImages, setProductImages] = useState([]);
   const [selectedImage, setSelectedImage] = useState("");
   const [reviewLoading, setReviewLoading] = useState(false);
+  const [relatedProducts, setRelatedProducts] = useState([]);
 
   // Color and Size Selection
   const [selectedColor, setSelectedColor] = useState("");
@@ -87,6 +88,16 @@ function ProductDetails() {
     }
 
     setProduct(data);
+    const { data: relatedData, error: relatedError } = await supabase
+  .from("products")
+  .select("*")
+  .eq("category", data.category)
+  .neq("id", data.id)
+  .limit(4);
+
+if (!relatedError) {
+  setRelatedProducts(relatedData || []);
+}
     setSelectedImage(data.image_url || "");
     setLoading(false);
   }
@@ -458,14 +469,46 @@ function buyNow() {
             <h1>{product.name}</h1>
 
             <p
-              style={{
-                fontSize: "28px",
-                fontWeight: "bold",
-                color: "#8b5e3c",
-              }}
-            >
-              Rs. {product.price}
-            </p>
+  style={{
+    fontSize: "28px",
+    fontWeight: "bold",
+    color: "#8b5e3c",
+  }}
+>
+  {product.discount > 0 ? (
+    <>
+      <span
+        style={{
+          textDecoration: "line-through",
+          color: "#888",
+          fontSize: "20px",
+          marginRight: "10px",
+        }}
+      >
+        Rs. {product.price}
+      </span>
+
+      <strong>
+        Rs.{" "}
+        {(
+          Number(product.price) -
+          (Number(product.price) * Number(product.discount)) / 100
+        ).toFixed(0)}
+      </strong>
+
+      <span
+        style={{
+          fontSize: "16px",
+          marginLeft: "10px",
+        }}
+      >
+        🔥 {product.discount}% OFF
+      </span>
+    </>
+  ) : (
+    <>Rs. {product.price}</>
+  )}
+</p>
 
             <p>
               <strong>Category:</strong>{" "}
@@ -541,6 +584,7 @@ function buyNow() {
                           : "normal",
                     }}
                   >
+                    
                     {color}
                   </button>
                 ))}
@@ -596,7 +640,37 @@ function buyNow() {
                 ))}
               </div>
             </div>
-
+{Number(product.stock) === 0 ? (
+  <p
+    style={{
+      color: "red",
+      fontWeight: "bold",
+      fontSize: "18px",
+    }}
+  >
+    ❌ Out of Stock
+  </p>
+) : Number(product.stock) <= 5 ? (
+  <p
+    style={{
+      color: "#d97706",
+      fontWeight: "bold",
+      fontSize: "16px",
+    }}
+  >
+    ⚠️ Only {product.stock} left in stock!
+  </p>
+) : (
+  <p
+    style={{
+      color: "green",
+      fontWeight: "bold",
+      fontSize: "16px",
+    }}
+  >
+    ✅ In Stock
+  </p>
+)}
             {/* Wishlist */}
 
             <button
@@ -620,7 +694,7 @@ function buyNow() {
 
             <button
               onClick={addToCart}
-              disabled={product.stock <= 0}
+              disabled={Number(product.stock) === 0}
               style={{
                 width: "100%",
                 padding: "14px",
@@ -640,6 +714,7 @@ function buyNow() {
             </button>
             <button
   onClick={buyNow}
+  disabled={Number(product.stock) === 0}
   style={{
     width: "100%",
     padding: "14px",
@@ -803,8 +878,88 @@ function buyNow() {
                     {review.comment}
                   </p>
                 </div>
+                
               ))
             )}
+            {relatedProducts.length > 0 && (
+  <section style={{ marginTop: "50px" }}>
+    <h2
+      style={{
+        textAlign: "center",
+        marginBottom: "25px",
+      }}
+    >
+      🛍️ You May Also Like
+    </h2>
+
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns:
+          "repeat(auto-fit, minmax(220px, 1fr))",
+        gap: "20px",
+      }}
+    >
+      {relatedProducts.map((item) => (
+        <div
+          key={item.id}
+          onClick={() =>
+            (window.location.href = `/product?id=${item.id}`)
+          }
+          style={{
+            border: "1px solid #ddd",
+            borderRadius: "10px",
+            padding: "15px",
+            cursor: "pointer",
+          }}
+        >
+          {item.image_url && (
+            <img
+              src={item.image_url}
+              alt={item.name}
+              style={{
+                width: "100%",
+                height: "220px",
+                objectFit: "cover",
+                borderRadius: "8px",
+              }}
+            />
+          )}
+
+          <h3>{item.name}</h3>
+
+          <p>
+            {item.discount > 0 ? (
+              <>
+                <span
+                  style={{
+                    textDecoration: "line-through",
+                    color: "#888",
+                    marginRight: "8px",
+                  }}
+                >
+                  Rs. {item.price}
+                </span>
+
+                <strong>
+                  Rs.{" "}
+                  {(
+                    Number(item.price) -
+                    (Number(item.price) *
+                      Number(item.discount)) /
+                      100
+                  ).toFixed(0)}
+                </strong>
+              </>
+            ) : (
+              <>Rs. {item.price}</>
+            )}
+          </p>
+        </div>
+      ))}
+    </div>
+  </section>
+)}
           </div>
         </div>
       </div>

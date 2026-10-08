@@ -391,8 +391,172 @@ function App() {
           )}
 
           <h3>{product.name}</h3>
+          <section style={{ padding: "40px 20px" }}>
+  <h2
+    style={{
+      textAlign: "center",
+      marginBottom: "25px",
+    }}
+  >
+    🆕 New Arrivals
+  </h2>
 
-          <p>Rs. {product.price}</p>
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+      gap: "20px",
+      maxWidth: "1200px",
+      margin: "0 auto",
+    }}
+  >
+    {products.slice(0, 6).map((product) => (
+      <div
+        key={product.id}
+        onClick={() =>
+          (window.location.href = `/product?id=${product.id}`)
+        }
+        style={{
+          border: "1px solid #ddd",
+          borderRadius: "10px",
+          padding: "15px",
+          cursor: "pointer",
+        }}
+      >
+        {product.image_url && (
+          <img
+            src={product.image_url}
+            alt={product.name}
+            style={{
+              width: "100%",
+              height: "250px",
+              objectFit: "cover",
+              borderRadius: "8px",
+            }}
+          />
+        )}
+
+        <h3>{product.name}</h3>
+
+        <p>Rs. {product.price}</p>
+
+        <p style={{ color: "#777" }}>
+          {product.category}
+        </p>
+      </div>
+    ))}
+  </div>
+</section>
+          {products.filter((product) => Number(product.discount) > 0).length > 0 && (
+  <section style={{ padding: "40px 20px" }}>
+    <h2
+      style={{
+        textAlign: "center",
+        marginBottom: "25px",
+      }}
+    >
+      🔥 Sale Products
+    </h2>
+
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+        gap: "20px",
+        maxWidth: "1200px",
+        margin: "0 auto",
+      }}
+    >
+      {products
+        .filter((product) => Number(product.discount) > 0)
+        .map((product) => {
+          const salePrice =
+            Number(product.price) -
+            (Number(product.price) * Number(product.discount)) / 100;
+
+          return (
+            <div
+              key={product.id}
+              onClick={() =>
+                (window.location.href = `/product?id=${product.id}`)
+              }
+              style={{
+                border: "1px solid #ddd",
+                borderRadius: "10px",
+                padding: "15px",
+                cursor: "pointer",
+              }}
+            >
+              {product.image_url && (
+                <img
+                  src={product.image_url}
+                  alt={product.name}
+                  style={{
+                    width: "100%",
+                    height: "250px",
+                    objectFit: "cover",
+                    borderRadius: "8px",
+                  }}
+                />
+              )}
+
+              <h3>{product.name}</h3>
+
+              <p>
+                <span
+                  style={{
+                    textDecoration: "line-through",
+                    color: "#888",
+                    marginRight: "8px",
+                  }}
+                >
+                  Rs. {product.price}
+                </span>
+
+                <strong>
+                  Rs. {salePrice.toFixed(0)}
+                </strong>
+              </p>
+
+              <p>
+                🔥 {product.discount}% OFF
+              </p>
+            </div>
+          );
+        })}
+    </div>
+  </section>
+)}
+
+          <p>
+  {product.discount > 0 ? (
+    <>
+      <span
+        style={{
+          textDecoration: "line-through",
+          color: "#888",
+          marginRight: "8px",
+        }}
+      >
+        Rs. {product.price}
+      </span>
+
+      <strong>
+        Rs.{" "}
+        {(
+          Number(product.price) -
+          (Number(product.price) * Number(product.discount)) / 100
+        ).toFixed(0)}
+      </strong>
+
+      <span style={{ marginLeft: "8px" }}>
+        🔥 {product.discount}% OFF
+      </span>
+    </>
+  ) : (
+    <>Rs. {product.price}</>
+  )}
+</p>
 
           <p style={{ color: "#777" }}>
             {product.category}
