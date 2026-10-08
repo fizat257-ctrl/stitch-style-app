@@ -209,10 +209,13 @@ function Checkout() {
   );
 
       if (stockError) {
-        console.error(
-          "Stock update error:",
-          stockError
-        );
+       console.error("STOCK UPDATE ERROR FULL:", {
+  message: stockError?.message,
+  code: stockError?.code,
+  details: stockError?.details,
+  hint: stockError?.hint,
+});
+        
 
         alert(
           `❌ Stock update failed: ${stockError.message}`
