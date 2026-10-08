@@ -14,6 +14,7 @@ function CustomStitching() {
     phone: "",
     product_name: "",
     size: "",
+    fabric_type: "",
     measurements: "",
     stitching_instructions: "",
   });
@@ -29,18 +30,18 @@ function CustomStitching() {
       .order("name", { ascending: true });
 
     if (error) {
-  console.error("Products error:", error);
+      console.error("Products error:", error);
 
-  alert(
-    "Products load nahi ho rahe.\n\n" +
-    error.message +
-    "\n\nCode: " +
-    error.code
-  );
+      alert(
+        "Products load nahi ho rahe.\n\n" +
+          error.message +
+          "\n\nCode: " +
+          error.code
+      );
 
-  setLoadingProducts(false);
-  return;
-}
+      setLoadingProducts(false);
+      return;
+    }
 
     setProducts(data || []);
     setLoadingProducts(false);
@@ -99,6 +100,11 @@ function CustomStitching() {
       return;
     }
 
+    if (!formData.fabric_type) {
+      alert("Please select a fabric type.");
+      return;
+    }
+
     if (!formData.measurements.trim()) {
       alert("Please enter your measurements.");
       return;
@@ -107,6 +113,7 @@ function CustomStitching() {
     setLoading(true);
 
     let referenceImageUrl = "";
+
     localStorage.setItem("customerPhone", formData.phone);
 
     // Upload reference image
@@ -153,6 +160,7 @@ function CustomStitching() {
           phone: formData.phone,
           product_name: formData.product_name,
           size: formData.size,
+          fabric_type: formData.fabric_type,
           measurements: formData.measurements,
           stitching_instructions:
             formData.stitching_instructions,
@@ -184,6 +192,7 @@ function CustomStitching() {
       phone: "",
       product_name: "",
       size: "",
+      fabric_type: "",
       measurements: "",
       stitching_instructions: "",
     });
@@ -263,6 +272,7 @@ function CustomStitching() {
         </p>
 
         <form onSubmit={handleSubmit}>
+          {/* Customer Name */}
           <label style={labelStyle}>
             Customer Name
           </label>
@@ -276,6 +286,7 @@ function CustomStitching() {
             style={inputStyle}
           />
 
+          {/* Phone Number */}
           <label style={labelStyle}>
             Phone Number
           </label>
@@ -289,6 +300,7 @@ function CustomStitching() {
             style={inputStyle}
           />
 
+          {/* Product */}
           <label style={labelStyle}>
             Choose Product
           </label>
@@ -316,6 +328,7 @@ function CustomStitching() {
               ))}
           </select>
 
+          {/* Size */}
           <label style={labelStyle}>
             Select Size
           </label>
@@ -335,6 +348,33 @@ function CustomStitching() {
             <option value="XXL">XXL</option>
           </select>
 
+          {/* Fabric Type */}
+          <label style={labelStyle}>
+            Fabric Type
+          </label>
+
+          <select
+            name="fabric_type"
+            value={formData.fabric_type}
+            onChange={handleChange}
+            style={inputStyle}
+          >
+            <option value="">
+              Select Fabric Type
+            </option>
+            <option value="Cotton">Cotton</option>
+            <option value="Lawn">Lawn</option>
+            <option value="Linen">Linen</option>
+            <option value="Silk">Silk</option>
+            <option value="Chiffon">Chiffon</option>
+            <option value="Organza">Organza</option>
+            <option value="Velvet">Velvet</option>
+            <option value="Khaddar">Khaddar</option>
+            <option value="Denim">Denim</option>
+            <option value="Other">Other</option>
+          </select>
+
+          {/* Measurements */}
           <label style={labelStyle}>
             Measurements
           </label>
@@ -348,6 +388,7 @@ function CustomStitching() {
             style={inputStyle}
           />
 
+          {/* Stitching Instructions */}
           <label style={labelStyle}>
             Stitching Instructions
           </label>
@@ -361,6 +402,7 @@ function CustomStitching() {
             style={inputStyle}
           />
 
+          {/* Reference Design */}
           <label style={labelStyle}>
             📷 Reference Design
           </label>
@@ -375,6 +417,7 @@ function CustomStitching() {
             }}
           />
 
+          {/* Image Preview */}
           {imagePreview && (
             <div
               style={{
@@ -404,6 +447,7 @@ function CustomStitching() {
             </div>
           )}
 
+          {/* Submit */}
           <button
             type="submit"
             disabled={loading}
