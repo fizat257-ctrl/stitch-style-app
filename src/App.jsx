@@ -240,9 +240,7 @@ function App() {
       color: #222;
     }
 
-    .mobile-menu {
-      display: none;
-    }
+    
 
     @media (max-width: 768px) {
       .desktop-menu {
@@ -266,12 +264,13 @@ function App() {
     gap: "12px",
     alignItems: "center",
     flexWrap: "wrap",
+    width: "100%",
   }}
 >
   {/* Mobile Menu Button */}
  <button
   className="mobile-menu-button"
-  onClick={() => setMenuOpen(!menuOpen)}
+  onClick={() => setMenuOpen((prev) => !prev)}
   style={{
     background: "transparent",
     border: "none",
@@ -280,6 +279,7 @@ function App() {
     cursor: "pointer",
     padding: "8px 15px",
     textAlign: "left",
+    marginRight: "auto",
   }}
 >
   ☰
