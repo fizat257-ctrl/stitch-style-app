@@ -16,6 +16,9 @@ function App() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showFeatured, setShowFeatured] = useState(false);
+const [showNewArrivals, setShowNewArrivals] = useState(false);
+const [showSaleProducts, setShowSaleProducts] = useState(false);
 
   const [cart, setCart] = useState(() => {
     const savedCart = localStorage.getItem("cart");
@@ -213,124 +216,281 @@ function App() {
     >
       {/* Header */}
 
-      <header
-        style={{
-          padding: "20px",
-          background: "white",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          borderBottom: "1px solid #eee",
-          flexWrap: "wrap",
-          gap: "15px",
-        }}
-      >
-        <h1 style={{ margin: 0 }}>Stitch & Style</h1>
-        <style>
-  {`
-    .desktop-menu {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
+<header
+  style={{
+    padding: "20px",
+    background: "white",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottom: "1px solid #eee",
+    flexWrap: "wrap",
+    gap: "15px",
+  }}
+>
+  <h1 style={{ margin: 0 }}>Stitch & Style</h1>
 
-    .mobile-header-actions {
-      display: none !important;
-    }
-
-    .mobile-menu-button {
-      display: none !important;
-    }
-
-    @media (max-width: 768px) {
+  <style>
+    {`
       .desktop-menu {
-        display: none !important;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
       }
 
       .mobile-header-actions {
-        display: flex !important;
-        width: 100%;
-        align-items: center;
-        justify-content: space-between;
+        display: none !important;
       }
 
       .mobile-menu-button {
-        display: block !important;
-        background: transparent;
-        border: none;
-        color: #222 !important;
-        font-size: 32px !important;
-        cursor: pointer;
-        padding: 8px 15px;
+        display: none !important;
       }
-    }
-  `}
-</style>
 
-<nav
-  style={{
-    display: "flex",
-    gap: "12px",
-    alignItems: "center",
-    flexWrap: "wrap",
-    width: "100%",
-  }}
->
-  {/* ================= MOBILE HEADER ================= */}
-  <div className="mobile-header-actions">
-    {/* Menu Button */}
-    <button
-      className="mobile-menu-button"
-      onClick={() => setMenuOpen((prev) => !prev)}
-    >
-      ☰
-    </button>
+      @media (max-width: 768px) {
+        .desktop-menu {
+          display: none !important;
+        }
 
-    {/* Cart - Outside Dropdown */}
-    <a
-      href="/cart"
-      style={{
-        textDecoration: "none",
-        color: "#222",
-        fontWeight: "bold",
-        fontSize: "18px",
-        padding: "8px 15px",
-        whiteSpace: "nowrap",
-      }}
-    >
-      🛒 Cart (
-      {cart.reduce(
-        (total, item) => total + item.quantity,
-        0
-      )}
-      )
-    </a>
-  </div>
+        .mobile-header-actions {
+          display: flex !important;
+          width: 100%;
+          align-items: center;
+          justify-content: space-between;
+        }
 
-  {/* ================= MOBILE DROPDOWN ================= */}
-  {menuOpen && (
-    <div
-      className="mobile-menu"
-      style={{
-        width: "100%",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "flex-start",
-        gap: "14px",
-        padding: "15px 20px",
-        boxSizing: "border-box",
-      }}
-    >
+        .mobile-menu-button {
+          display: block !important;
+          background: transparent;
+          border: none;
+          color: #222 !important;
+          font-size: 32px !important;
+          cursor: pointer;
+          padding: 8px 15px;
+        }
+      }
+    `}
+  </style>
+
+  <nav
+    style={{
+      display: "flex",
+      gap: "12px",
+      alignItems: "center",
+      flexWrap: "wrap",
+      width: "100%",
+    }}
+  >
+    {/* ================= MOBILE HEADER ================= */}
+
+    <div className="mobile-header-actions">
+
+      {/* Menu Button */}
+      <button
+        className="mobile-menu-button"
+        onClick={() => setMenuOpen((prev) => !prev)}
+      >
+        ☰
+      </button>
+
+      {/* Cart - Outside Dropdown */}
+      <a
+        href="/cart"
+        style={{
+          textDecoration: "none",
+          color: "#222",
+          fontWeight: "bold",
+          fontSize: "18px",
+          padding: "8px 15px",
+          whiteSpace: "nowrap",
+        }}
+      >
+        🛒 Cart (
+        {cart.reduce(
+          (total, item) => total + item.quantity,
+          0
+        )}
+        )
+      </a>
+    </div>
+
+    {/* ================= MOBILE DROPDOWN ================= */}
+
+    {menuOpen && (
+      <div
+        className="mobile-menu"
+        style={{
+          width: "100%",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-start",
+          gap: "14px",
+          padding: "15px 20px",
+          boxSizing: "border-box",
+        }}
+      >
+        {/* Home */}
+        <a
+          href="/"
+          style={{
+            display: "block",
+            width: "100%",
+            textDecoration: "none",
+            color: "#222",
+          }}
+          onClick={() => setMenuOpen(false)}
+        >
+          Home
+        </a>
+
+        {/* Products */}
+        <a
+          href="/#products"
+          style={{
+            display: "block",
+            width: "100%",
+            textDecoration: "none",
+            color: "#222",
+          }}
+          onClick={() => setMenuOpen(false)}
+        >
+          Products
+        </a>
+
+        {/* Featured Products */}
+        <button
+          onClick={() => {
+            setShowFeatured(true);
+            setShowNewArrivals(false);
+            setShowSaleProducts(false);
+            setMenuOpen(false);
+          }}
+          style={{
+            background: "none",
+            border: "none",
+            padding: 0,
+            fontSize: "16px",
+            cursor: "pointer",
+            color: "#222",
+            textAlign: "left",
+          }}
+        >
+          ⭐ Featured Products
+        </button>
+
+        {/* New Arrivals */}
+        <button
+          onClick={() => {
+            setShowFeatured(false);
+            setShowNewArrivals(true);
+            setShowSaleProducts(false);
+            setMenuOpen(false);
+          }}
+          style={{
+            background: "none",
+            border: "none",
+            padding: 0,
+            fontSize: "16px",
+            cursor: "pointer",
+            color: "#222",
+            textAlign: "left",
+          }}
+        >
+          🆕 New Arrivals
+        </button>
+
+        {/* Sale Products */}
+        <button
+          onClick={() => {
+            setShowFeatured(false);
+            setShowNewArrivals(false);
+            setShowSaleProducts(true);
+            setMenuOpen(false);
+          }}
+          style={{
+            background: "none",
+            border: "none",
+            padding: 0,
+            fontSize: "16px",
+            cursor: "pointer",
+            color: "#222",
+            textAlign: "left",
+          }}
+        >
+          🔥 Sale Products
+        </button>
+
+        {/* Wishlist */}
+        <a
+          href="/wishlist"
+          style={{
+            display: "block",
+            width: "100%",
+            textDecoration: "none",
+            color: "#222",
+            fontWeight: "bold",
+          }}
+          onClick={() => setMenuOpen(false)}
+        >
+          ❤️ Wishlist ({wishlist.length})
+        </a>
+
+        {/* My Orders */}
+        <a
+          href="/my-orders"
+          style={{
+            display: "block",
+            width: "100%",
+            textDecoration: "none",
+            color: "#222",
+            fontWeight: "bold",
+          }}
+          onClick={() => setMenuOpen(false)}
+        >
+          📦 My Orders
+        </a>
+
+        {/* Custom Stitching */}
+        <a
+          href="/custom-stitching"
+          style={{
+            display: "block",
+            width: "100%",
+            textDecoration: "none",
+            color: "#8b5e3c",
+            fontWeight: "bold",
+          }}
+          onClick={() => setMenuOpen(false)}
+        >
+          🧵 Custom Stitching
+        </a>
+
+        {/* Admin */}
+        <a
+          href="/admin-login"
+          style={{
+            display: "block",
+            width: "100%",
+            textDecoration: "none",
+            color: "#222",
+          }}
+          onClick={() => setMenuOpen(false)}
+        >
+          Admin
+        </a>
+      </div>
+    )}
+
+    {/* ================= DESKTOP MENU ================= */}
+
+    <div className="desktop-menu">
+
       <a
         href="/"
         style={{
-          display: "block",
-          width: "100%",
           textDecoration: "none",
           color: "#222",
         }}
-        onClick={() => setMenuOpen(false)}
       >
         Home
       </a>
@@ -338,158 +498,76 @@ function App() {
       <a
         href="/#products"
         style={{
-          display: "block",
-          width: "100%",
           textDecoration: "none",
           color: "#222",
         }}
-        onClick={() => setMenuOpen(false)}
       >
         Products
       </a>
 
       <a
-        href="/wishlist"
-        style={{
-          display: "block",
-          width: "100%",
-          textDecoration: "none",
-          color: "#222",
-          fontWeight: "bold",
-        }}
-        onClick={() => setMenuOpen(false)}
-      >
-        ❤️ Wishlist ({wishlist.length})
-      </a>
-
-      <a
-        href="/my-orders"
-        style={{
-          display: "block",
-          width: "100%",
-          textDecoration: "none",
-          color: "#222",
-          fontWeight: "bold",
-        }}
-        onClick={() => setMenuOpen(false)}
-      >
-        📦 My Orders
-      </a>
-
-      <a
         href="/custom-stitching"
         style={{
-          display: "block",
-          width: "100%",
           textDecoration: "none",
           color: "#8b5e3c",
           fontWeight: "bold",
         }}
-        onClick={() => setMenuOpen(false)}
       >
         🧵 Custom Stitching
       </a>
 
       <a
+        href="/wishlist"
+        style={{
+          textDecoration: "none",
+          color: "#222",
+          fontWeight: "bold",
+        }}
+      >
+        ❤️ Wishlist ({wishlist.length})
+      </a>
+
+      {/* CART - DESKTOP */}
+      <a
+        href="/cart"
+        style={{
+          textDecoration: "none",
+          color: "#222",
+          fontWeight: "bold",
+          whiteSpace: "nowrap",
+        }}
+      >
+        🛒 Cart (
+        {cart.reduce(
+          (total, item) => total + item.quantity,
+          0
+        )}
+        )
+      </a>
+
+      <a
+        href="/my-orders"
+        style={{
+          textDecoration: "none",
+          color: "#222",
+          fontWeight: "bold",
+        }}
+      >
+        📦 My Orders
+      </a>
+
+      <a
         href="/admin-login"
         style={{
-          display: "block",
-          width: "100%",
           textDecoration: "none",
           color: "#222",
         }}
-        onClick={() => setMenuOpen(false)}
       >
         Admin
       </a>
     </div>
-  )}
-
-  {/* ================= DESKTOP MENU ================= */}
-  <div className="desktop-menu">
-    <a
-      href="/"
-      style={{
-        textDecoration: "none",
-        color: "#222",
-      }}
-    >
-      Home
-    </a>
-
-    <a
-      href="/#products"
-      style={{
-        textDecoration: "none",
-        color: "#222",
-      }}
-    >
-      Products
-    </a>
-
-    <a
-      href="/custom-stitching"
-      style={{
-        textDecoration: "none",
-        color: "#8b5e3c",
-        fontWeight: "bold",
-      }}
-    >
-      🧵 Custom Stitching
-    </a>
-
-    <a
-      href="/wishlist"
-      style={{
-        textDecoration: "none",
-        color: "#222",
-        fontWeight: "bold",
-      }}
-    >
-      ❤️ Wishlist ({wishlist.length})
-    </a>
-
-    {/* CART - DESKTOP */}
-    <a
-      href="/cart"
-      style={{
-        textDecoration: "none",
-        color: "#222",
-        fontWeight: "bold",
-        whiteSpace: "nowrap",
-      }}
-    >
-      🛒 Cart (
-      {cart.reduce(
-        (total, item) => total + item.quantity,
-        0
-      )}
-      )
-    </a>
-
-    <a
-      href="/my-orders"
-      style={{
-        textDecoration: "none",
-        color: "#222",
-        fontWeight: "bold",
-      }}
-    >
-      📦 My Orders
-    </a>
-
-    <a
-      href="/admin-login"
-      style={{
-        textDecoration: "none",
-        color: "#222",
-      }}
-    >
-      Admin
-    </a>
-  </div>
-</nav>
-      </header>
+  </nav>
+</header>
 
       {/* Hero */}
 
@@ -519,7 +597,7 @@ function App() {
           Discover beautiful fashion, jewelry, makeup, and more — all in one place.
         </p>
       </section>
-      {featuredProducts.length > 0 && (
+      {showFeatured && featuredProducts.length > 0 && (
   <section style={{ padding: "40px 20px" }}>
     <h2
       style={{
@@ -566,7 +644,8 @@ function App() {
           )}
 
           <h3>{product.name}</h3>
-          <section style={{ padding: "40px 20px" }}>
+          {showNewArrivals && (
+  <section style={{ padding: "40px 20px" }}>
   <h2
     style={{
       textAlign: "center",
@@ -622,7 +701,8 @@ function App() {
     ))}
   </div>
 </section>
-          {products.filter((product) => Number(product.discount) > 0).length > 0 && (
+)}
+          {showSaleProducts && (
   <section style={{ padding: "40px 20px" }}>
     <h2
       style={{
@@ -702,6 +782,7 @@ function App() {
     </div>
   </section>
 )}
+
 
           <p>
   {product.discount > 0 ? (
