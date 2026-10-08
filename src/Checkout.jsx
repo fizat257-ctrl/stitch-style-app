@@ -115,6 +115,15 @@ function Checkout() {
       return;
     }
 
+    // Check current Supabase session
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
+
+    console.log("SESSION:", session);
+    console.log("SESSION ERROR:", sessionError);
+
     // Step 1: Save customer order
     const { data: order, error: orderError } = await supabase
       .from("orders")
@@ -133,7 +142,23 @@ function Checkout() {
       .single();
 
     if (orderError) {
-      console.error("Order error:", orderError);
+      console.log(
+        "ORDER ERROR MESSAGE:",
+        orderError?.message
+      );
+      console.log(
+        "ORDER ERROR CODE:",
+        orderError?.code
+      );
+      console.log(
+        "ORDER ERROR DETAILS:",
+        orderError?.details
+      );
+      console.log(
+        "ORDER ERROR HINT:",
+        orderError?.hint
+      );
+
       alert(`❌ ${orderError.message}`);
       return;
     }
@@ -178,7 +203,10 @@ function Checkout() {
       );
 
       if (stockError) {
-        console.error("Stock update error:", stockError);
+        console.error(
+          "Stock update error:",
+          stockError
+        );
 
         alert(
           `❌ Stock update failed: ${stockError.message}`
@@ -189,7 +217,10 @@ function Checkout() {
     }
 
     // Step 4: Save customer phone
-    localStorage.setItem("customerPhone", customer.phone);
+    localStorage.setItem(
+      "customerPhone",
+      customer.phone
+    );
 
     // Step 5: Show success
     setOrderPlaced(true);
