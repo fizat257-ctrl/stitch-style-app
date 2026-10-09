@@ -25,17 +25,18 @@ function Checkout() {
     ? [buyNowItem]
     : JSON.parse(localStorage.getItem("cart") || "[]");
 
-  // Product total
+  // Product Total
   const productTotal = cart.reduce(
-    (sum, item) => sum + Number(item.price) * item.quantity,
+    (sum, item) =>
+      sum + Number(item.price) * Number(item.quantity || 0),
     0
   );
 
-  // Fixed delivery/service fee
-  const deliveryFee = 250;
+  // Subtotal: No delivery fee
+  const subtotal = productTotal;
 
-  // Final total
-  const total = productTotal + deliveryFee;
+  // Final Total
+  const total = subtotal;
 
   function handleChange(e) {
     setCustomer({
@@ -74,7 +75,7 @@ function Checkout() {
     );
 
     doc.text(
-      `Delivery Fee: Rs. ${deliveryFee}`,
+      `Subtotal: Rs. ${subtotal}`,
       20,
       122
     );
@@ -105,7 +106,7 @@ function Checkout() {
     e.preventDefault();
 
     const stockError = cart.some(
-      (item) => item.quantity > item.stock
+      (item) => Number(item.quantity) > Number(item.stock)
     );
 
     if (stockError) {
@@ -194,28 +195,27 @@ function Checkout() {
 
     // Step 3: Reduce product stock
     for (const item of cart) {
-  console.log("STOCK DEBUG:", {
-    productId: item.id,
-    productName: item.name,
-    quantity: item.quantity,
-  });
+      console.log("STOCK DEBUG:", {
+        productId: item.id,
+        productName: item.name,
+        quantity: item.quantity,
+      });
 
-  const { error: stockError } = await supabase.rpc(
-    "reduce_product_stock",
-    {
-      p_product_id: item.id,
-      p_quantity: item.quantity,
-    }
-  );
+      const { error: stockError } = await supabase.rpc(
+        "reduce_product_stock",
+        {
+          p_product_id: item.id,
+          p_quantity: item.quantity,
+        }
+      );
 
       if (stockError) {
-       console.error("STOCK UPDATE ERROR FULL:", {
-  message: stockError?.message,
-  code: stockError?.code,
-  details: stockError?.details,
-  hint: stockError?.hint,
-});
-        
+        console.error("STOCK UPDATE ERROR FULL:", {
+          message: stockError?.message,
+          code: stockError?.code,
+          details: stockError?.details,
+          hint: stockError?.hint,
+        });
 
         alert(
           `❌ Stock update failed: ${stockError.message}`
@@ -232,8 +232,8 @@ function Checkout() {
     );
 
     // Step 5: Show success
-    setOrderPlaced(true);
     setCompletedOrder(order);
+    setOrderPlaced(true);
 
     // Step 6: Clear cart
     localStorage.removeItem("cart");
@@ -268,12 +268,23 @@ function Checkout() {
       <div
         style={{
           maxWidth: "700px",
-          margin: "80px auto",
+          margin: "50px auto",
           padding: "30px",
-          textAlign: "center",
+          boxSizing: "border-box",
         }}
       >
-        <h1>🎉 Order Received!</h1>
+        <h1
+          style={{
+            textAlign: "center",
+            color: "#9a6248",
+          }}
+        >
+          Stitch & Style
+        </h1>
+
+        <h2 style={{ textAlign: "center" }}>
+          🎉 Order Received!
+        </h2>
 
         <p>
           Thank you, {customer.name}.
@@ -290,8 +301,8 @@ function Checkout() {
         </p>
 
         <p>
-          Delivery Fee:{" "}
-          <strong>Rs. {deliveryFee}</strong>
+          Subtotal:{" "}
+          <strong>Rs. {subtotal}</strong>
         </p>
 
         <p>
@@ -313,6 +324,7 @@ function Checkout() {
               background: "#f8f8f8",
               borderRadius: "15px",
               border: "1px solid #ddd",
+              textAlign: "center",
             }}
           >
             <h3>EasyPaisa Payment</h3>
@@ -335,9 +347,7 @@ function Checkout() {
             />
 
             <p>
-              <strong>
-                Amount: Rs. {total}
-              </strong>
+              <strong>Amount: Rs. {total}</strong>
             </p>
 
             <p
@@ -380,18 +390,104 @@ function Checkout() {
         maxWidth: "700px",
         margin: "50px auto",
         padding: "30px",
+        boxSizing: "border-box",
       }}
     >
-      <h1>Checkout 🛍️</h1>
+      {/* Website Name */}
+      <h1
+        style={{
+          textAlign: "center",
+          color: "#9a6248",
+          marginBottom: "5px",
+        }}
+      >
+        Stitch & Style
+      </h1>
+
+      <h2
+        style={{
+          textAlign: "center",
+          marginTop: "10px",
+        }}
+      >
+        Checkout 🛍️
+      </h2>
+
+      {/* Ordered Products */}
+      <div
+        style={{
+          margin: "25px 0",
+          padding: "15px",
+          border: "1px solid #e5d5c9",
+          borderRadius: "12px",
+          background: "#fffaf6",
+        }}
+      >
+        {cart.map((item, index) => (
+          <div
+            key={item.id || index}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "15px",
+              padding: "10px 0",
+              flexWrap: "wrap",
+            }}
+          >
+            <img
+              src={item.image_url || ""}
+              alt={item.name}
+              style={{
+                width: "110px",
+                height: "120px",
+                objectFit: "cover",
+                borderRadius: "8px",
+                background: "#f1f1f1",
+              }}
+            />
+
+            <div style={{ flex: "1", minWidth: "150px" }}>
+              <h3 style={{ margin: "0 0 10px" }}>
+                {item.name}
+              </h3>
+
+              <p>
+                Quantity: {item.quantity}
+              </p>
+
+              <p>
+                Price: Rs. {Number(item.price)}
+              </p>
+
+              {item.selectedColor && (
+                <p>Color: {item.selectedColor}</p>
+              )}
+
+              {item.selectedSize && (
+                <p>Size: {item.selectedSize}</p>
+              )}
+
+              {item.selectedFabric && (
+                <p>Fabric: {item.selectedFabric}</p>
+              )}
+
+              <strong>
+                Item Total: Rs.{" "}
+                {Number(item.price) * Number(item.quantity || 0)}
+              </strong>
+            </div>
+          </div>
+        ))}
+      </div>
 
       {/* Product Total */}
       <h3>
         Product Total: Rs. {productTotal}
       </h3>
 
-      {/* Delivery Fee */}
+      {/* Subtotal */}
       <h3>
-        Delivery Fee: Rs. {deliveryFee}
+        Subtotal: Rs. {subtotal}
       </h3>
 
       {/* Final Total */}
