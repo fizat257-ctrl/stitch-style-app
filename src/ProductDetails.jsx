@@ -197,9 +197,7 @@ if (!relatedError) {
       );
     }
 
-    alert(
-      `🛒 Product added to cart!\nColor: ${selectedColor}\nSize: ${selectedSize}\nFabric: ${selectedFabric}`
-    );
+   alert("🛒 Product added to cart!");
   }
 
 function buyNow() {
