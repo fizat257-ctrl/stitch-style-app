@@ -561,6 +561,22 @@ const [subscribeToNews, setSubscribeToNews] = useState(false);
     announcements and Stitch & Style updates.
   </p>
 </div>
+<div>
+  <label>Country / Region</label>
+  <input
+    type="text"
+    name="country"
+    value="Pakistan"
+    readOnly
+    style={{
+      width: "100%",
+      padding: "12px",
+      marginTop: "6px",
+      marginBottom: "15px",
+      boxSizing: "border-box",
+    }}
+  />
+</div>
         {/* Full Name */}
         <div style={{ marginBottom: "15px" }}>
           <label>Full Name</label>
