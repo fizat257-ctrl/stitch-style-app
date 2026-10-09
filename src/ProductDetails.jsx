@@ -201,16 +201,21 @@ if (!relatedError) {
   }
 
 function buyNow() {
-  if (!selectedColor) {
-    alert("Please select a color.");
-    return;
-  }
+  if (
+  product.category?.toLowerCase() === "clothing" &&
+  !selectedColor
+) {
+  alert("Please select a color.");
+  return;
+}
 
-  if (!selectedSize) {
-    alert("Please select a size.");
-    return;
-  }
-
+ if (
+  product.category?.toLowerCase() === "clothing" &&
+  !selectedSize
+) {
+  alert("Please select a size.");
+  return;
+}
   const buyNowItem = {
     ...product,
     quantity: 1,
