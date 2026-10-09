@@ -129,16 +129,22 @@ if (!relatedError) {
     }
 
     // Color required
-    if (!selectedColor) {
-      alert("🎨 Please select a color.");
-      return;
-    }
+    if (
+  product.category?.toLowerCase() === "clothing" &&
+  !selectedColor
+) {
+  alert("Please select a color");
+  return;
+}
 
     // Size required
-    if (!selectedSize) {
-      alert("📏 Please select a size.");
-      return;
-    }
+   if (
+  product.category?.toLowerCase() === "clothing" &&
+  !selectedSize
+) {
+  alert("Please select a size");
+  return;
+}
 
     const cart = JSON.parse(
       localStorage.getItem("cart") || "[]"
