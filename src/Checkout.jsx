@@ -668,6 +668,39 @@ const [subscribeToNews, setSubscribeToNews] = useState(false);
     Save this information for next time
   </label>
 </div>
+{/* Shipping Method */}
+        <div style={{ marginBottom: "20px" }}>
+          <h3>Shipping Method</h3>
+
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              padding: "12px",
+              border: "1px solid #ddd",
+              borderRadius: "8px",
+              cursor: "pointer",
+            }}
+          >
+            <input
+              type="radio"
+              name="shippingMethod"
+              value="500"
+              defaultChecked
+            />
+
+            <div>
+              <strong>
+                Standard Delivery — All over Pakistan
+              </strong>
+
+              <p style={{ margin: "5px 0 0" }}>
+                Delivery Charges: Rs. {deliveryCharges}
+              </p>
+            </div>
+          </label>
+        </div>
 
         {/* Payment Method */}
         <div style={{ marginBottom: "20px" }}>
