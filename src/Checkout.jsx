@@ -16,8 +16,9 @@ function Checkout() {
     address: "",
     city: "",
   });
+
   const [newsletterEmail, setNewsletterEmail] = useState("");
-const [subscribeToNews, setSubscribeToNews] = useState(false);
+  const [subscribeToNews, setSubscribeToNews] = useState(false);
 
   const buyNowItem = JSON.parse(
     localStorage.getItem("buyNowItem") || "null"
@@ -34,11 +35,14 @@ const [subscribeToNews, setSubscribeToNews] = useState(false);
     0
   );
 
-  // Subtotal: No delivery fee
+  // Delivery Charges
+  const deliveryCharges = 500;
+
+  // Subtotal
   const subtotal = productTotal;
 
-  // Final Total
-  const total = subtotal;
+  // Final Total: Products + Delivery
+  const total = subtotal + deliveryCharges;
 
   function handleChange(e) {
     setCustomer({
@@ -63,42 +67,49 @@ const [subscribeToNews, setSubscribeToNews] = useState(false);
     doc.text(`Phone: ${customer.phone}`, 20, 68);
     doc.text(`Address: ${customer.address}`, 20, 78);
     doc.text(`City: ${customer.city}`, 20, 88);
+    doc.text("Country / Region: Pakistan", 20, 98);
 
     doc.text(
       `Payment Method: ${paymentMethod}`,
       20,
-      100
+      110
     );
 
     doc.text(
       `Product Total: Rs. ${productTotal}`,
       20,
-      112
+      122
     );
 
     doc.text(
       `Subtotal: Rs. ${subtotal}`,
       20,
-      122
+      132
     );
 
     doc.text(
-      `Final Total: Rs. ${total}`,
+      `Delivery Charges: Rs. ${deliveryCharges}`,
       20,
-      132
+      142
+    );
+
+    doc.text(
+      `Final Total: Rs. ${order.total}`,
+      20,
+      152
     );
 
     doc.text(
       `Date: ${new Date().toLocaleString()}`,
       20,
-      144
+      164
     );
 
-    doc.setFontSize(13);
+    doc.setFontSize(12);
     doc.text(
       "Thank you for shopping with Stitch & Style!",
       20,
-      165
+      182
     );
 
     doc.save(`Stitch-Style-Order-${order.id}.pdf`);
@@ -106,6 +117,11 @@ const [subscribeToNews, setSubscribeToNews] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
+
+    if (cart.length === 0) {
+      alert("Your cart is empty.");
+      return;
+    }
 
     const stockError = cart.some(
       (item) => Number(item.quantity) > Number(item.stock)
@@ -145,22 +161,10 @@ const [subscribeToNews, setSubscribeToNews] = useState(false);
       .single();
 
     if (orderError) {
-      console.log(
-        "ORDER ERROR MESSAGE:",
-        orderError?.message
-      );
-      console.log(
-        "ORDER ERROR CODE:",
-        orderError?.code
-      );
-      console.log(
-        "ORDER ERROR DETAILS:",
-        orderError?.details
-      );
-      console.log(
-        "ORDER ERROR HINT:",
-        orderError?.hint
-      );
+      console.log("ORDER ERROR MESSAGE:", orderError?.message);
+      console.log("ORDER ERROR CODE:", orderError?.code);
+      console.log("ORDER ERROR DETAILS:", orderError?.details);
+      console.log("ORDER ERROR HINT:", orderError?.hint);
 
       alert(`❌ ${orderError.message}`);
       return;
@@ -174,8 +178,6 @@ const [subscribeToNews, setSubscribeToNews] = useState(false);
       price: Number(item.price),
       quantity: item.quantity,
       image_url: item.image_url || "",
-
-      // Selected product options
       selected_color: item.selectedColor || "",
       selected_size: item.selectedSize || "",
       selected_fabric: item.selectedFabric || "",
@@ -219,19 +221,13 @@ const [subscribeToNews, setSubscribeToNews] = useState(false);
           hint: stockError?.hint,
         });
 
-        alert(
-          `❌ Stock update failed: ${stockError.message}`
-        );
-
+        alert(`❌ Stock update failed: ${stockError.message}`);
         return;
       }
     }
 
     // Step 4: Save customer phone
-    localStorage.setItem(
-      "customerPhone",
-      customer.phone
-    );
+    localStorage.setItem("customerPhone", customer.phone);
 
     // Step 5: Show success
     setCompletedOrder(order);
@@ -243,7 +239,7 @@ const [subscribeToNews, setSubscribeToNews] = useState(false);
   }
 
   // Empty Cart
-  if (cart.length === 0) {
+  if (cart.length === 0 && !orderPlaced) {
     return (
       <div
         style={{
@@ -288,33 +284,30 @@ const [subscribeToNews, setSubscribeToNews] = useState(false);
           🎉 Order Received!
         </h2>
 
+        <p>Thank you, {customer.name}.</p>
+
         <p>
-          Thank you, {customer.name}.
+          We will contact you on <strong>{customer.phone}</strong>.
         </p>
 
         <p>
-          We will contact you on{" "}
-          <strong>{customer.phone}</strong>.
+          Product Total: <strong>Rs. {productTotal}</strong>
         </p>
 
         <p>
-          Product Total:{" "}
-          <strong>Rs. {productTotal}</strong>
+          Subtotal: <strong>Rs. {subtotal}</strong>
         </p>
 
         <p>
-          Subtotal:{" "}
-          <strong>Rs. {subtotal}</strong>
+          Delivery Charges: <strong>Rs. {deliveryCharges}</strong>
         </p>
 
         <p>
-          Final Total:{" "}
-          <strong>Rs. {total}</strong>
+          Final Total: <strong>Rs. {completedOrder?.total}</strong>
         </p>
 
         <p>
-          Payment Method:{" "}
-          <strong>{paymentMethod}</strong>
+          Payment Method: <strong>{paymentMethod}</strong>
         </p>
 
         {paymentMethod === "EasyPaisa" && (
@@ -332,8 +325,7 @@ const [subscribeToNews, setSubscribeToNews] = useState(false);
             <h3>EasyPaisa Payment</h3>
 
             <p>
-              Please scan the QR code to complete your
-              payment.
+              Please scan the QR code to complete your payment.
             </p>
 
             <img
@@ -349,7 +341,9 @@ const [subscribeToNews, setSubscribeToNews] = useState(false);
             />
 
             <p>
-              <strong>Amount: Rs. {total}</strong>
+              <strong>
+                Amount: Rs. {completedOrder?.total}
+              </strong>
             </p>
 
             <p
@@ -453,13 +447,9 @@ const [subscribeToNews, setSubscribeToNews] = useState(false);
                 {item.name}
               </h3>
 
-              <p>
-                Quantity: {item.quantity}
-              </p>
+              <p>Quantity: {item.quantity}</p>
 
-              <p>
-                Price: Rs. {Number(item.price)}
-              </p>
+              <p>Price: Rs. {Number(item.price)}</p>
 
               {item.selectedColor && (
                 <p>Color: {item.selectedColor}</p>
@@ -483,100 +473,104 @@ const [subscribeToNews, setSubscribeToNews] = useState(false);
       </div>
 
       {/* Product Total */}
-      <h3>
-        Product Total: Rs. {productTotal}
-      </h3>
+      <h3>Product Total: Rs. {productTotal}</h3>
 
       {/* Subtotal */}
-      <h3>
-        Subtotal: Rs. {subtotal}
-      </h3>
+      <h3>Subtotal: Rs. {subtotal}</h3>
+
+      {/* Delivery Charges */}
+      <h3>Delivery Charges: Rs. {deliveryCharges}</h3>
 
       {/* Final Total */}
-      <h2>
-        Final Total: Rs. {total}
-      </h2>
+      <h2>Final Total: Rs. {total}</h2>
 
       <form onSubmit={handleSubmit}>
         {/* Email Updates */}
-<div
-  style={{
-    margin: "20px 0",
-    padding: "18px",
-    border: "1px solid #e5d5c9",
-    borderRadius: "10px",
-    background: "#fffaf6",
-  }}
->
-  <label
-    htmlFor="newsletterEmail"
-    style={{
-      display: "block",
-      fontWeight: "bold",
-      marginBottom: "8px",
-    }}
-  >
-    Email Address
-  </label>
+        <div
+          style={{
+            margin: "20px 0",
+            padding: "18px",
+            border: "1px solid #e5d5c9",
+            borderRadius: "10px",
+            background: "#fffaf6",
+          }}
+        >
+          <label
+            htmlFor="newsletterEmail"
+            style={{
+              display: "block",
+              fontWeight: "bold",
+              marginBottom: "8px",
+            }}
+          >
+            Email Address
+          </label>
 
-  <input
-    id="newsletterEmail"
-    type="email"
-    value={newsletterEmail}
-    onChange={(e) => setNewsletterEmail(e.target.value)}
-    placeholder="Enter your email address"
-    style={{
-      width: "100%",
-      padding: "12px",
-      boxSizing: "border-box",
-      marginBottom: "12px",
-    }}
-  />
+          <input
+            id="newsletterEmail"
+            type="email"
+            value={newsletterEmail}
+            onChange={(e) => setNewsletterEmail(e.target.value)}
+            placeholder="Enter your email address"
+            style={{
+              width: "100%",
+              padding: "12px",
+              boxSizing: "border-box",
+              marginBottom: "12px",
+            }}
+          />
 
-  <label
-    style={{
-      display: "flex",
-      alignItems: "center",
-      gap: "10px",
-      cursor: "pointer",
-    }}
-  >
-    <input
-      type="checkbox"
-      checked={subscribeToNews}
-      onChange={(e) => setSubscribeToNews(e.target.checked)}
-    />
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              cursor: "pointer",
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={subscribeToNews}
+              onChange={(e) =>
+                setSubscribeToNews(e.target.checked)
+              }
+            />
 
-    <span>Email me with new news</span>
-  </label>
+            <span>Email me with new news</span>
+          </label>
 
-  <p
-    style={{
-      fontSize: "13px",
-      color: "#666",
-      marginBottom: 0,
-    }}
-  >
-    Tick this option to subscribe to new product
-    announcements and Stitch & Style updates.
-  </p>
-</div>
-<div>
-  <label>Country / Region</label>
-  <input
-    type="text"
-    name="country"
-    value="Pakistan"
-    readOnly
-    style={{
-      width: "100%",
-      padding: "12px",
-      marginTop: "6px",
-      marginBottom: "15px",
-      boxSizing: "border-box",
-    }}
-  />
-</div>
+          <p
+            style={{
+              fontSize: "13px",
+              color: "#666",
+              marginBottom: 0,
+            }}
+          >
+            Tick this option to subscribe to new product
+            announcements and Stitch & Style updates.
+          </p>
+        </div>
+
+        {/* Country / Region */}
+        <div style={{ marginBottom: "15px" }}>
+          <label htmlFor="country">Country / Region</label>
+
+          <input
+            id="country"
+            type="text"
+            name="country"
+            value="Pakistan"
+            readOnly
+            style={{
+              width: "100%",
+              padding: "12px",
+              marginTop: "6px",
+              marginBottom: "15px",
+              boxSizing: "border-box",
+            }}
+          />
+        </div>
+
         {/* Full Name */}
         <div style={{ marginBottom: "15px" }}>
           <label>Full Name</label>
@@ -652,23 +646,27 @@ const [subscribeToNews, setSubscribeToNews] = useState(false);
             }}
           />
         </div>
+
+        {/* Save Information */}
         <div style={{ marginBottom: "20px" }}>
-  <label
-    style={{
-      display: "flex",
-      alignItems: "center",
-      gap: "8px",
-      cursor: "pointer",
-    }}
-  >
-    <input
-      type="checkbox"
-      name="saveInformation"
-    />
-    Save this information for next time
-  </label>
-</div>
-{/* Shipping Method */}
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              cursor: "pointer",
+            }}
+          >
+            <input
+              type="checkbox"
+              name="saveInformation"
+            />
+
+            Save this information for next time
+          </label>
+        </div>
+
+        {/* Shipping Method */}
         <div style={{ marginBottom: "20px" }}>
           <h3>Shipping Method</h3>
 
@@ -742,9 +740,7 @@ const [subscribeToNews, setSubscribeToNews] = useState(false);
           >
             <h3>EasyPaisa Payment 📱</h3>
 
-            <p>
-              Scan the QR code below to pay:
-            </p>
+            <p>Scan the QR code below to pay:</p>
 
             <img
               src="/easypaisa-qr.png"
@@ -758,9 +754,7 @@ const [subscribeToNews, setSubscribeToNews] = useState(false);
               }}
             />
 
-            <h3>
-              Amount: Rs. {total}
-            </h3>
+            <h3>Amount: Rs. {total}</h3>
 
             <p
               style={{
