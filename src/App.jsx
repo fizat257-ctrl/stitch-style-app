@@ -314,21 +314,28 @@ const [showSaleProducts, setShowSaleProducts] = useState(false);
       </a>
     </div>
 
-    {/* ================= MOBILE DROPDOWN ================= */}
+   {/* ================= MOBILE DROPDOWN ================= */}
 
-    {menuOpen && (
-      <div
-        className="mobile-menu"
-        style={{
-          width: "100%",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-start",
-          gap: "14px",
-          padding: "15px 20px",
-          boxSizing: "border-box",
-        }}
-      >
+{menuOpen && (
+  <div
+    className="mobile-menu"
+    style={{
+      position: "fixed",
+      top: "0",
+      left: "0",
+      width: "100%",
+      height: "100dvh",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "flex-start",
+      gap: "28px",
+      padding: "35px 25px",
+      boxSizing: "border-box",
+      background: "#fff8f0",
+      zIndex: 9999,
+      overflowY: "auto",
+    }}
+  >
         {/* Home */}
         <a
           href="/"
