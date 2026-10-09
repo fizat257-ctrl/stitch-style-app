@@ -652,6 +652,22 @@ const [subscribeToNews, setSubscribeToNews] = useState(false);
             }}
           />
         </div>
+        <div style={{ marginBottom: "20px" }}>
+  <label
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
+      cursor: "pointer",
+    }}
+  >
+    <input
+      type="checkbox"
+      name="saveInformation"
+    />
+    Save this information for next time
+  </label>
+</div>
 
         {/* Payment Method */}
         <div style={{ marginBottom: "20px" }}>
