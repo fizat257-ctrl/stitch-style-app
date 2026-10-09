@@ -16,6 +16,8 @@ function Checkout() {
     address: "",
     city: "",
   });
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+const [subscribeToNews, setSubscribeToNews] = useState(false);
 
   const buyNowItem = JSON.parse(
     localStorage.getItem("buyNowItem") || "null"
@@ -496,6 +498,69 @@ function Checkout() {
       </h2>
 
       <form onSubmit={handleSubmit}>
+        {/* Email Updates */}
+<div
+  style={{
+    margin: "20px 0",
+    padding: "18px",
+    border: "1px solid #e5d5c9",
+    borderRadius: "10px",
+    background: "#fffaf6",
+  }}
+>
+  <label
+    htmlFor="newsletterEmail"
+    style={{
+      display: "block",
+      fontWeight: "bold",
+      marginBottom: "8px",
+    }}
+  >
+    Email Address
+  </label>
+
+  <input
+    id="newsletterEmail"
+    type="email"
+    value={newsletterEmail}
+    onChange={(e) => setNewsletterEmail(e.target.value)}
+    placeholder="Enter your email address"
+    style={{
+      width: "100%",
+      padding: "12px",
+      boxSizing: "border-box",
+      marginBottom: "12px",
+    }}
+  />
+
+  <label
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: "10px",
+      cursor: "pointer",
+    }}
+  >
+    <input
+      type="checkbox"
+      checked={subscribeToNews}
+      onChange={(e) => setSubscribeToNews(e.target.checked)}
+    />
+
+    <span>Email me with new news</span>
+  </label>
+
+  <p
+    style={{
+      fontSize: "13px",
+      color: "#666",
+      marginBottom: 0,
+    }}
+  >
+    Tick this option to subscribe to new product
+    announcements and Stitch & Style updates.
+  </p>
+</div>
         {/* Full Name */}
         <div style={{ marginBottom: "15px" }}>
           <label>Full Name</label>
