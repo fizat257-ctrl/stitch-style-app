@@ -318,6 +318,7 @@ const [showSaleProducts, setShowSaleProducts] = useState(false);
 
 {menuOpen && (
   <div
+  
     className="mobile-menu"
     style={{
       position: "fixed",
@@ -336,6 +337,7 @@ const [showSaleProducts, setShowSaleProducts] = useState(false);
       overflowY: "auto",
     }}
   >
+    <button onClick={() => setMenuOpen(false)}>×</button>
         {/* Home */}
         <a
           href="/"
