@@ -10,9 +10,11 @@ function Cart() {
     localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);
 
-  // Unique identity for product + color + size
+  // Unique identity for product + color + size + measurements
   function getItemKey(item) {
-    return `${item.id}-${item.selectedColor || ""}-${item.selectedSize || ""}`;
+    return `${item.id}-${item.selectedColor || ""}-${
+      item.selectedSize || ""
+    }-${JSON.stringify(item.customMeasurements || {})}`;
   }
 
   function increaseQuantity(item) {
@@ -95,8 +97,8 @@ function Cart() {
                 marginBottom: "15px",
                 background: "#fff",
                 borderRadius: "10px",
-                boxShadow:
-                  "0 2px 10px rgba(0,0,0,0.1)",
+                boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+                flexWrap: "wrap",
               }}
             >
               {/* Product Image */}
@@ -116,7 +118,7 @@ function Cart() {
 
               {/* Product Information */}
 
-              <div style={{ flex: 1 }}>
+              <div style={{ flex: 1, minWidth: "180px" }}>
                 <h3>{item.name}</h3>
 
                 <p>
@@ -140,11 +142,64 @@ function Cart() {
                     {item.selectedSize}
                   </p>
                 )}
+
+                {/* Custom Measurements */}
+
+                {item.customMeasurements &&
+                  Object.values(item.customMeasurements).some(
+                    (value) => String(value).trim() !== ""
+                  ) && (
+                    <div
+                      style={{
+                        marginTop: "10px",
+                        padding: "12px",
+                        background: "#fff8f2",
+                        border: "1px solid #ead8c8",
+                        borderRadius: "8px",
+                      }}
+                    >
+                      <strong>Custom Measurements</strong>
+
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns:
+                            "repeat(auto-fit, minmax(120px, 1fr))",
+                          gap: "6px",
+                          marginTop: "8px",
+                        }}
+                      >
+                        {Object.entries(
+                          item.customMeasurements
+                        ).map(([key, value]) =>
+                          String(value).trim() !== "" ? (
+                            <p
+                              key={key}
+                              style={{
+                                margin: "2px 0",
+                                fontSize: "14px",
+                              }}
+                            >
+                              <strong>
+                                {key.charAt(0).toUpperCase() +
+                                  key.slice(1)}:
+                              </strong>{" "}
+                              {value} inches
+                            </p>
+                          ) : null
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                {/* Fabric */}
+
                 {item.selectedFabric && (
-  <p>
-    <strong>Fabric:</strong> {item.selectedFabric}
-  </p>
-)}
+                  <p>
+                    <strong>Fabric:</strong>{" "}
+                    {item.selectedFabric}
+                  </p>
+                )}
 
                 <p>
                   Available Stock: {item.stock}
@@ -160,9 +215,7 @@ function Cart() {
                   }}
                 >
                   <button
-                    onClick={() =>
-                      decreaseQuantity(item)
-                    }
+                    onClick={() => decreaseQuantity(item)}
                     style={{
                       width: "35px",
                       height: "35px",
@@ -183,9 +236,7 @@ function Cart() {
                   </span>
 
                   <button
-                    onClick={() =>
-                      increaseQuantity(item)
-                    }
+                    onClick={() => increaseQuantity(item)}
                     style={{
                       width: "35px",
                       height: "35px",

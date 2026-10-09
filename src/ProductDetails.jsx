@@ -16,6 +16,15 @@ function ProductDetails() {
   const [selectedColor, setSelectedColor] = useState("");
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedFabric, setSelectedFabric] = useState("");
+  const [customMeasurements, setCustomMeasurements] = useState({
+  chest: "",
+  waist: "",
+  hips: "",
+  shoulder: "",
+  length: "",
+  sleeve: "",
+});
+const [useCustomMeasurements, setUseCustomMeasurements] = useState(false);
 
   const [customerName, setCustomerName] = useState("");
   const [rating, setRating] = useState(5);
@@ -168,12 +177,18 @@ if (!relatedError) {
     );
 
     // Same product + same color + same size
-    const existingProduct = cart.find(
-      (item) =>
-        item.id === product.id &&
-        item.selectedColor === selectedColor &&
-        item.selectedSize === selectedSize
-    );
+    const currentMeasurements = useCustomMeasurements
+  ? customMeasurements
+  : null;
+
+const existingProduct = cart.find(
+  (item) =>
+    item.id === product.id &&
+    item.selectedColor === selectedColor &&
+    item.selectedSize === (useCustomMeasurements ? "" : selectedSize) &&
+    JSON.stringify(item.customMeasurements || null) ===
+      JSON.stringify(currentMeasurements)
+);
 
     if (existingProduct) {
       if (existingProduct.quantity >= product.stock) {
@@ -207,8 +222,11 @@ if (!relatedError) {
             ...product,
             quantity: 1,
             selectedColor: selectedColor,
-            selectedSize: selectedSize,
+            selectedSize: useCustomMeasurements ? "" : selectedSize,
             selectedFabric: selectedFabric,
+           customMeasurements: useCustomMeasurements
+  ? { ...customMeasurements }
+  : undefined,
           },
         ])
       );
@@ -226,18 +244,29 @@ function buyNow() {
   return;
 }
 
- if (
-  product.category?.toLowerCase() === "clothing" &&
-  !selectedSize
-) {
-  alert("Please select a size.");
-  return;
+ {/* Size or Custom Measurements required */}
+
+if (product.category?.toLowerCase() === "clothing") {
+  if (useCustomMeasurements) {
+    const hasMeasurement = Object.values(customMeasurements).some(
+      (value) => String(value).trim() !== ""
+    );
+
+    if (!hasMeasurement) {
+      alert("Please enter your custom measurements.");
+      return;
+    }
+  } else if (!selectedSize) {
+    alert("Please select a size or choose custom measurements.");
+    return;
+  }
 }
   const buyNowItem = {
     ...product,
     quantity: 1,
     selectedColor: selectedColor,
-    selectedSize: selectedSize,
+    selectedSize: useCustomMeasurements ? "" : selectedSize,
+    customMeasurements: useCustomMeasurements ? customMeasurements : undefined,
   };
 
   localStorage.setItem(
@@ -795,6 +824,100 @@ function buyNow() {
     </div>
   </>
 )}
+{/* Custom Clothing Measurements */}
+
+{product.category?.toLowerCase() === "clothing" && (
+  <div
+    style={{
+      marginTop: "20px",
+      padding: "18px",
+      border: "1px solid #e5d5c8",
+      borderRadius: "12px",
+      background: "#fffaf6",
+    }}
+  >
+    <label
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "10px",
+        fontWeight: "bold",
+        cursor: "pointer",
+      }}
+    >
+      <input
+        type="checkbox"
+        checked={useCustomMeasurements}
+        onChange={(e) => {
+          setUseCustomMeasurements(e.target.checked);
+          if (e.target.checked) {
+            setSelectedSize("");
+          }
+        }}
+      />
+      I want to enter my own measurements
+    </label>
+
+    {useCustomMeasurements && (
+      <>
+        <p style={{ color: "#666", lineHeight: "1.5" }}>
+          Enter your measurements below. All measurements are in inches.
+        </p>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))",
+            gap: "12px",
+          }}
+        >
+          {[
+            ["chest", "Chest"],
+            ["waist", "Waist"],
+            ["hips", "Hips"],
+            ["shoulder", "Shoulder"],
+            ["length", "Length"],
+            ["sleeve", "Sleeve Length"],
+          ].map(([key, label]) => (
+            <div key={key}>
+              <label
+                style={{
+                  display: "block",
+                  marginBottom: "5px",
+                  fontSize: "14px",
+                }}
+              >
+                {label}
+              </label>
+
+              <input
+                type="number"
+                min="0"
+                step="0.25"
+                placeholder={`Enter ${label.toLowerCase()}`}
+                value={customMeasurements[key]}
+                onChange={(e) =>
+                  setCustomMeasurements((prev) => ({
+                    ...prev,
+                    [key]: e.target.value,
+                  }))
+                }
+                style={{
+                  width: "100%",
+                  boxSizing: "border-box",
+                  padding: "10px",
+                  border: "1px solid #ccc",
+                  borderRadius: "7px",
+                }}
+              />
+            </div>
+          ))}
+        </div>
+      </>
+    )}
+  </div>
+)}
+
 {/* Fabric Selection - Clothing Only */}
 
 {product.category?.toLowerCase() === "clothing" && (

@@ -5,6 +5,8 @@ import jsPDF from "jspdf";
 function Checkout() {
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [completedOrder, setCompletedOrder] = useState(null);
+  const [completedTotals, setCompletedTotals] = useState(null);
+  const [completedItems, setCompletedItems] = useState([]);
 
   const [paymentMethod, setPaymentMethod] = useState(
     "Cash on Delivery"
@@ -19,6 +21,7 @@ function Checkout() {
 
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [subscribeToNews, setSubscribeToNews] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const buyNowItem = JSON.parse(
     localStorage.getItem("buyNowItem") || "null"
@@ -28,20 +31,14 @@ function Checkout() {
     ? [buyNowItem]
     : JSON.parse(localStorage.getItem("cart") || "[]");
 
-  // Product Total
   const productTotal = cart.reduce(
     (sum, item) =>
       sum + Number(item.price) * Number(item.quantity || 0),
     0
   );
 
-  // Delivery Charges
   const deliveryCharges = 500;
-
-  // Subtotal
   const subtotal = productTotal;
-
-  // Final Total: Products + Delivery
   const total = subtotal + deliveryCharges;
 
   function handleChange(e) {
@@ -51,72 +48,115 @@ function Checkout() {
     });
   }
 
+  function hasCustomMeasurements(item) {
+    return (
+      item.customMeasurements &&
+      Object.values(item.customMeasurements).some(
+        (value) => String(value ?? "").trim() !== ""
+      )
+    );
+  }
+
+  function formatMeasurementName(name) {
+    const labels = {
+      chest: "Chest",
+      waist: "Waist",
+      hips: "Hips",
+      shoulder: "Shoulder",
+      length: "Length",
+      sleeve: "Sleeve",
+    };
+
+    return labels[name] || name;
+  }
+
   function generateInvoice(order) {
+    if (!order) return;
+
     const doc = new jsPDF();
 
-    doc.setFontSize(20);
-    doc.text("Stitch & Style", 20, 20);
+    const savedTotals = completedTotals || {
+      productTotal: 0,
+      subtotal: 0,
+      deliveryCharges: 500,
+      total: Number(order.total || 0),
+    };
 
-    doc.setFontSize(14);
-    doc.text("Order Invoice / Receipt", 20, 32);
+    let y = 20;
 
-    doc.setFontSize(11);
+    function addText(text, size = 10) {
+      doc.setFontSize(size);
 
-    doc.text(`Order ID: ${order.id}`, 20, 48);
-    doc.text(`Customer: ${customer.name}`, 20, 58);
-    doc.text(`Phone: ${customer.phone}`, 20, 68);
-    doc.text(`Address: ${customer.address}`, 20, 78);
-    doc.text(`City: ${customer.city}`, 20, 88);
-    doc.text("Country / Region: Pakistan", 20, 98);
+      const lines = doc.splitTextToSize(String(text), 170);
 
-    doc.text(
-      `Payment Method: ${paymentMethod}`,
-      20,
-      110
-    );
+      if (y + lines.length * 7 > 275) {
+        doc.addPage();
+        y = 20;
+      }
 
-    doc.text(
-      `Product Total: Rs. ${productTotal}`,
-      20,
-      122
-    );
+      doc.text(lines, 20, y);
+      y += lines.length * 7;
+    }
 
-    doc.text(
-      `Subtotal: Rs. ${subtotal}`,
-      20,
-      132
-    );
+    addText("Stitch & Style", 20);
+    addText("Order Invoice / Receipt", 14);
+    addText(`Order ID: ${order.id}`);
+    addText(`Customer: ${customer.name}`);
+    addText(`Phone: ${customer.phone}`);
+    addText(`Address: ${customer.address}`);
+    addText(`City: ${customer.city}`);
+    addText(`Payment: ${paymentMethod}`);
 
-    doc.text(
-      `Delivery Charges: Rs. ${deliveryCharges}`,
-      20,
-      142
-    );
+    y += 3;
+    addText("ORDERED PRODUCTS", 13);
 
-    doc.text(
-      `Final Total: Rs. ${order.total}`,
-      20,
-      152
-    );
+    completedItems.forEach((item, index) => {
+      addText(`${index + 1}. ${item.name}`);
+      addText(`Quantity: ${item.quantity}`);
+      addText(`Price: Rs. ${Number(item.price)}`);
 
-    doc.text(
-      `Date: ${new Date().toLocaleString()}`,
-      20,
-      164
-    );
+      if (item.selectedColor) {
+        addText(`Color: ${item.selectedColor}`);
+      }
 
-    doc.setFontSize(12);
-    doc.text(
-      "Thank you for shopping with Stitch & Style!",
-      20,
-      182
-    );
+      if (item.selectedSize) {
+        addText(`Size: ${item.selectedSize}`);
+      }
+
+      if (item.selectedFabric) {
+        addText(`Fabric: ${item.selectedFabric}`);
+      }
+
+      if (hasCustomMeasurements(item)) {
+        addText("Custom Measurements:");
+
+        Object.entries(item.customMeasurements).forEach(
+          ([name, value]) => {
+            if (String(value ?? "").trim() !== "") {
+              addText(
+                `${formatMeasurementName(name)}: ${value} inches`
+              );
+            }
+          }
+        );
+      }
+
+      y += 3;
+    });
+
+    y += 3;
+    addText(`Product Total: Rs. ${savedTotals.productTotal}`);
+    addText(`Subtotal: Rs. ${savedTotals.subtotal}`);
+    addText(`Delivery: Rs. ${savedTotals.deliveryCharges}`);
+    addText(`Final Total: Rs. ${savedTotals.total}`, 13);
+    addText("Thank you for shopping with Stitch & Style!");
 
     doc.save(`Stitch-Style-Order-${order.id}.pdf`);
   }
-
   async function handleSubmit(e) {
     e.preventDefault();
+
+    if (isSubmitting) return;
 
     if (cart.length === 0) {
       alert("Your cart is empty.");
@@ -124,144 +164,132 @@ function Checkout() {
     }
 
     const stockError = cart.some(
-      (item) => Number(item.quantity) > Number(item.stock)
+      (item) =>
+        Number(item.quantity) < 1 ||
+        Number(item.quantity) > Number(item.stock)
     );
 
     if (stockError) {
-      alert(
-        "❌ Some products are no longer available in the requested quantity. Please update your cart."
-      );
+      alert("Please check product stock and quantity.");
       return;
     }
 
-    // Check current Supabase session
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession();
+    setIsSubmitting(true);
 
-    console.log("SESSION:", session);
-    console.log("SESSION ERROR:", sessionError);
+    try {
+      const { data: order, error: orderError } = await supabase
+        .from("orders")
+        .insert([
+          {
+            customer_name: customer.name.trim(),
+            phone: customer.phone.trim(),
+            address: customer.address.trim(),
+            city: customer.city.trim(),
+            total,
+            status: "pending",
+            payment_method: paymentMethod,
+          },
+        ])
+        .select()
+        .single();
 
-    // Step 1: Save customer order
-    const { data: order, error: orderError } = await supabase
-      .from("orders")
-      .insert([
-        {
-          customer_name: customer.name,
-          phone: customer.phone,
-          address: customer.address,
-          city: customer.city,
-          total: total,
-          status: "pending",
-          payment_method: paymentMethod,
-        },
-      ])
-      .select()
-      .single();
-
-    if (orderError) {
-      console.log("ORDER ERROR MESSAGE:", orderError?.message);
-      console.log("ORDER ERROR CODE:", orderError?.code);
-      console.log("ORDER ERROR DETAILS:", orderError?.details);
-      console.log("ORDER ERROR HINT:", orderError?.hint);
-
-      alert(`❌ ${orderError.message}`);
-      return;
-    }
-
-    // Step 2: Save ordered products
-    const orderItems = cart.map((item) => ({
-      order_id: order.id,
-      product_id: item.id,
-      product_name: item.name,
-      price: Number(item.price),
-      quantity: item.quantity,
-      image_url: item.image_url || "",
-      selected_color: item.selectedColor || "",
-      selected_size: item.selectedSize || "",
-      selected_fabric: item.selectedFabric || "",
-    }));
-
-    const { error: itemsError } = await supabase
-      .from("order_items")
-      .insert(orderItems);
-
-    if (itemsError) {
-      console.error("Order items error:", itemsError);
-
-      alert(
-        `⚠️ Order created, but products could not be saved: ${itemsError.message}`
-      );
-
-      return;
-    }
-
-    // Step 3: Reduce product stock
-    for (const item of cart) {
-      console.log("STOCK DEBUG:", {
-        productId: item.id,
-        productName: item.name,
-        quantity: item.quantity,
-      });
-
-      const { error: stockError } = await supabase.rpc(
-        "reduce_product_stock",
-        {
-          p_product_id: item.id,
-          p_quantity: item.quantity,
-        }
-      );
-
-      if (stockError) {
-        console.error("STOCK UPDATE ERROR FULL:", {
-          message: stockError?.message,
-          code: stockError?.code,
-          details: stockError?.details,
-          hint: stockError?.hint,
-        });
-
-        alert(`❌ Stock update failed: ${stockError.message}`);
+      if (orderError) {
+        alert(orderError.message);
         return;
       }
+
+      const orderItems = cart.map((item) => ({
+        order_id: order.id,
+        product_id: item.id,
+        product_name: item.name,
+        price: Number(item.price),
+        quantity: Number(item.quantity),
+        image_url: item.image_url || "",
+        selected_color: item.selectedColor || "",
+        selected_size: item.selectedSize || "",
+        selected_fabric: item.selectedFabric || "",
+        custom_measurements: hasCustomMeasurements(item)
+          ? item.customMeasurements
+          : null,
+      }));
+
+      const { error: itemsError } = await supabase
+        .from("order_items")
+        .insert(orderItems);
+
+      if (itemsError) {
+        alert(
+          "Order created, but products could not be saved: " +
+            itemsError.message
+        );
+        return;
+      }
+
+      for (const item of cart) {
+        const { error } = await supabase.rpc(
+          "reduce_product_stock",
+          {
+            p_product_id: item.id,
+            p_quantity: Number(item.quantity),
+          }
+        );
+
+        if (error) {
+          alert("Stock update failed: " + error.message);
+          return;
+        }
+      }
+
+      setCompletedItems(
+        cart.map((item) => ({
+          ...item,
+          customMeasurements: item.customMeasurements
+            ? { ...item.customMeasurements }
+            : {},
+        }))
+      );
+
+      setCompletedTotals({
+        productTotal,
+        subtotal,
+        deliveryCharges,
+        total,
+      });
+
+      localStorage.setItem("customerPhone", customer.phone);
+
+      setCompletedOrder(order);
+      setOrderPlaced(true);
+
+      localStorage.removeItem("cart");
+      localStorage.removeItem("buyNowItem");
+    } catch (error) {
+      console.error(error);
+      alert(error.message || "Something went wrong.");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    // Step 4: Save customer phone
-    localStorage.setItem("customerPhone", customer.phone);
-
-    // Step 5: Show success
-    setCompletedOrder(order);
-    setOrderPlaced(true);
-
-    // Step 6: Clear cart
-    localStorage.removeItem("cart");
-    localStorage.removeItem("buyNowItem");
   }
 
-  // Empty Cart
   if (cart.length === 0 && !orderPlaced) {
     return (
-      <div
-        style={{
-          maxWidth: "700px",
-          margin: "80px auto",
-          padding: "30px",
-          textAlign: "center",
-        }}
-      >
+      <div style={{ textAlign: "center", margin: "80px auto" }}>
         <h1>Your Cart is Empty 🛒</h1>
-
         <a href="/">
-          <button style={{ padding: "12px 25px" }}>
-            Continue Shopping
-          </button>
+          <button>Continue Shopping</button>
         </a>
       </div>
     );
   }
 
-  // Order Success
   if (orderPlaced) {
+    const savedTotals = completedTotals || {
+      productTotal: 0,
+      subtotal: 0,
+      deliveryCharges: 500,
+      total: Number(completedOrder?.total || 0),
+    };
+
     return (
       <div
         style={{
@@ -271,12 +299,7 @@ function Checkout() {
           boxSizing: "border-box",
         }}
       >
-        <h1
-          style={{
-            textAlign: "center",
-            color: "#9a6248",
-          }}
-        >
+        <h1 style={{ textAlign: "center", color: "#9a6248" }}>
           Stitch & Style
         </h1>
 
@@ -285,48 +308,58 @@ function Checkout() {
         </h2>
 
         <p>Thank you, {customer.name}.</p>
+        <p>We will contact you on {customer.phone}.</p>
 
-        <p>
-          We will contact you on <strong>{customer.phone}</strong>.
-        </p>
+        <p>Product Total: Rs. {savedTotals.productTotal}</p>
+        <p>Subtotal: Rs. {savedTotals.subtotal}</p>
+        <p>Delivery Charges: Rs. {savedTotals.deliveryCharges}</p>
+        <h3>Final Total: Rs. {savedTotals.total}</h3>
+        <p>Payment Method: {paymentMethod}</p>
 
-        <p>
-          Product Total: <strong>Rs. {productTotal}</strong>
-        </p>
-
-        <p>
-          Subtotal: <strong>Rs. {subtotal}</strong>
-        </p>
-
-        <p>
-          Delivery Charges: <strong>Rs. {deliveryCharges}</strong>
-        </p>
-
-        <p>
-          Final Total: <strong>Rs. {completedOrder?.total}</strong>
-        </p>
-
-        <p>
-          Payment Method: <strong>{paymentMethod}</strong>
-        </p>
-
-        {paymentMethod === "EasyPaisa" && (
+        {completedItems.map((item, index) => (
           <div
+            key={`${item.id}-${index}`}
             style={{
-              margin: "25px auto",
-              padding: "20px",
-              maxWidth: "350px",
-              background: "#f8f8f8",
-              borderRadius: "15px",
-              border: "1px solid #ddd",
-              textAlign: "center",
+              padding: "12px 0",
+              borderBottom: "1px solid #ddd",
             }}
           >
-            <h3>EasyPaisa Payment</h3>
+            <strong>{item.name}</strong>
+            <p>Quantity: {item.quantity}</p>
 
-            <p>
-              Please scan the QR code to complete your payment.
-            </p>
+            {item.selectedColor && (
+              <p>Color: {item.selectedColor}</p>
+            )}
+
+            {item.selectedSize && (
+              <p>Size: {item.selectedSize}</p>
+            )}
+
+            {item.selectedFabric && (
+              <p>Fabric: {item.selectedFabric}</p>
+            )}
+
+            {hasCustomMeasurements(item) && (
+              <div>
+                <strong>Custom Measurements:</strong>
+
+                {Object.entries(item.customMeasurements).map(
+                  ([name, value]) =>
+                    String(value ?? "").trim() !== "" && (
+                      <p key={name}>
+                        {formatMeasurementName(name)}: {value} inches
+                      </p>
+                    )
+                )}
+              </div>
+            )}
+          </div>
+        ))}
+
+        {paymentMethod === "EasyPaisa" && (
+          <div style={{ textAlign: "center", margin: "25px auto" }}>
+            <h3>EasyPaisa Payment</h3>
+            <p>Scan the QR code to complete your payment.</p>
 
             <img
               src="/easypaisa-qr.png"
@@ -335,51 +368,29 @@ function Checkout() {
                 width: "250px",
                 height: "250px",
                 objectFit: "contain",
-                display: "block",
-                margin: "15px auto",
               }}
             />
 
-            <p>
-              <strong>
-                Amount: Rs. {completedOrder?.total}
-              </strong>
-            </p>
-
-            <p
-              style={{
-                fontSize: "14px",
-                color: "#555",
-                lineHeight: "1.5",
-              }}
-            >
-              After making the payment, please keep your
-              payment receipt/screenshot for confirmation.
-            </p>
+            <p>Amount: Rs. {savedTotals.total}</p>
+            <p>Keep your payment receipt for confirmation.</p>
           </div>
         )}
 
         <button
           onClick={() => generateInvoice(completedOrder)}
-          style={{
-            padding: "12px 25px",
-            marginRight: "10px",
-            fontWeight: "bold",
-            cursor: "pointer",
-          }}
+          style={{ padding: "12px 20px", marginRight: "10px" }}
         >
           📄 Download Invoice
         </button>
 
         <a href="/">
-          <button style={{ padding: "12px 25px" }}>
+          <button style={{ padding: "12px 20px" }}>
             Continue Shopping
           </button>
         </a>
       </div>
     );
   }
-
   return (
     <div
       style={{
@@ -389,25 +400,11 @@ function Checkout() {
         boxSizing: "border-box",
       }}
     >
-      {/* Website Name */}
-      <h1
-        style={{
-          textAlign: "center",
-          color: "#9a6248",
-          marginBottom: "5px",
-        }}
-      >
+      <h1 style={{ textAlign: "center", color: "#9a6248" }}>
         Stitch & Style
       </h1>
 
-      <h2
-        style={{
-          textAlign: "center",
-          marginTop: "10px",
-        }}
-      >
-        Checkout 🛍️
-      </h2>
+      <h2 style={{ textAlign: "center" }}>Checkout 🛍️</h2>
 
       {/* Ordered Products */}
       <div
@@ -421,34 +418,29 @@ function Checkout() {
       >
         {cart.map((item, index) => (
           <div
-            key={item.id || index}
+            key={`${item.id}-${index}`}
             style={{
               display: "flex",
-              alignItems: "center",
               gap: "15px",
-              padding: "10px 0",
+              padding: "12px 0",
               flexWrap: "wrap",
+              borderBottom: "1px solid #eee",
             }}
           >
             <img
               src={item.image_url || ""}
               alt={item.name}
               style={{
-                width: "110px",
-                height: "120px",
+                width: "100px",
+                height: "110px",
                 objectFit: "cover",
                 borderRadius: "8px",
-                background: "#f1f1f1",
               }}
             />
 
             <div style={{ flex: "1", minWidth: "150px" }}>
-              <h3 style={{ margin: "0 0 10px" }}>
-                {item.name}
-              </h3>
-
+              <h3>{item.name}</h3>
               <p>Quantity: {item.quantity}</p>
-
               <p>Price: Rs. {Number(item.price)}</p>
 
               {item.selectedColor && (
@@ -463,6 +455,21 @@ function Checkout() {
                 <p>Fabric: {item.selectedFabric}</p>
               )}
 
+              {hasCustomMeasurements(item) && (
+                <div>
+                  <strong>Custom Measurements:</strong>
+
+                  {Object.entries(item.customMeasurements).map(
+                    ([name, value]) =>
+                      String(value ?? "").trim() !== "" && (
+                        <p key={name}>
+                          {formatMeasurementName(name)}: {value} inches
+                        </p>
+                      )
+                  )}
+                </div>
+              )}
+
               <strong>
                 Item Total: Rs.{" "}
                 {Number(item.price) * Number(item.quantity || 0)}
@@ -472,39 +479,15 @@ function Checkout() {
         ))}
       </div>
 
-      {/* Product Total */}
       <h3>Product Total: Rs. {productTotal}</h3>
-
-      {/* Subtotal */}
       <h3>Subtotal: Rs. {subtotal}</h3>
-
-      {/* Delivery Charges */}
       <h3>Delivery Charges: Rs. {deliveryCharges}</h3>
-
-      {/* Final Total */}
       <h2>Final Total: Rs. {total}</h2>
 
       <form onSubmit={handleSubmit}>
         {/* Email Updates */}
-        <div
-          style={{
-            margin: "20px 0",
-            padding: "18px",
-            border: "1px solid #e5d5c9",
-            borderRadius: "10px",
-            background: "#fffaf6",
-          }}
-        >
-          <label
-            htmlFor="newsletterEmail"
-            style={{
-              display: "block",
-              fontWeight: "bold",
-              marginBottom: "8px",
-            }}
-          >
-            Email Address
-          </label>
+        <div style={{ margin: "20px 0" }}>
+          <label htmlFor="newsletterEmail">Email Address</label>
 
           <input
             id="newsletterEmail"
@@ -515,8 +498,8 @@ function Checkout() {
             style={{
               width: "100%",
               padding: "12px",
+              marginTop: "6px",
               boxSizing: "border-box",
-              marginBottom: "12px",
             }}
           />
 
@@ -524,8 +507,8 @@ function Checkout() {
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "10px",
-              cursor: "pointer",
+              gap: "8px",
+              marginTop: "12px",
             }}
           >
             <input
@@ -535,48 +518,31 @@ function Checkout() {
                 setSubscribeToNews(e.target.checked)
               }
             />
-
-            <span>Email me with new news</span>
+            Email me with new news
           </label>
-
-          <p
-            style={{
-              fontSize: "13px",
-              color: "#666",
-              marginBottom: 0,
-            }}
-          >
-            Tick this option to subscribe to new product
-            announcements and Stitch & Style updates.
-          </p>
         </div>
 
-        {/* Country / Region */}
+        {/* Country */}
         <div style={{ marginBottom: "15px" }}>
           <label htmlFor="country">Country / Region</label>
-
           <input
             id="country"
-            type="text"
-            name="country"
             value="Pakistan"
             readOnly
             style={{
               width: "100%",
               padding: "12px",
               marginTop: "6px",
-              marginBottom: "15px",
               boxSizing: "border-box",
             }}
           />
         </div>
 
-        {/* Full Name */}
+        {/* Customer Details */}
         <div style={{ marginBottom: "15px" }}>
-          <label>Full Name</label>
-
+          <label htmlFor="customerName">Full Name</label>
           <input
-            type="text"
+            id="customerName"
             name="name"
             value={customer.name}
             onChange={handleChange}
@@ -584,17 +550,16 @@ function Checkout() {
             style={{
               width: "100%",
               padding: "12px",
-              marginTop: "5px",
+              marginTop: "6px",
               boxSizing: "border-box",
             }}
           />
         </div>
 
-        {/* Phone */}
         <div style={{ marginBottom: "15px" }}>
-          <label>Phone Number</label>
-
+          <label htmlFor="customerPhone">Phone Number</label>
           <input
+            id="customerPhone"
             type="tel"
             name="phone"
             value={customer.phone}
@@ -603,17 +568,16 @@ function Checkout() {
             style={{
               width: "100%",
               padding: "12px",
-              marginTop: "5px",
+              marginTop: "6px",
               boxSizing: "border-box",
             }}
           />
         </div>
 
-        {/* Address */}
         <div style={{ marginBottom: "15px" }}>
-          <label>Complete Address</label>
-
+          <label htmlFor="customerAddress">Complete Address</label>
           <textarea
+            id="customerAddress"
             name="address"
             value={customer.address}
             onChange={handleChange}
@@ -622,18 +586,16 @@ function Checkout() {
             style={{
               width: "100%",
               padding: "12px",
-              marginTop: "5px",
+              marginTop: "6px",
               boxSizing: "border-box",
             }}
           />
         </div>
 
-        {/* City */}
         <div style={{ marginBottom: "20px" }}>
-          <label>City</label>
-
+          <label htmlFor="customerCity">City</label>
           <input
-            type="text"
+            id="customerCity"
             name="city"
             value={customer.city}
             onChange={handleChange}
@@ -641,92 +603,41 @@ function Checkout() {
             style={{
               width: "100%",
               padding: "12px",
-              marginTop: "5px",
+              marginTop: "6px",
               boxSizing: "border-box",
             }}
           />
         </div>
 
-        {/* Save Information */}
-        <div style={{ marginBottom: "20px" }}>
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              cursor: "pointer",
-            }}
-          >
-            <input
-              type="checkbox"
-              name="saveInformation"
-            />
-
-            Save this information for next time
-          </label>
-        </div>
-
-        {/* Shipping Method */}
+        {/* Shipping */}
         <div style={{ marginBottom: "20px" }}>
           <h3>Shipping Method</h3>
-
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              padding: "12px",
-              border: "1px solid #ddd",
-              borderRadius: "8px",
-              cursor: "pointer",
-            }}
-          >
-            <input
-              type="radio"
-              name="shippingMethod"
-              value="500"
-              defaultChecked
-            />
-
-            <div>
-              <strong>
-                Standard Delivery — All over Pakistan
-              </strong>
-
-              <p style={{ margin: "5px 0 0" }}>
-                Delivery Charges: Rs. {deliveryCharges}
-              </p>
-            </div>
-          </label>
+          <p>Standard Delivery — All over Pakistan</p>
+          <p>Delivery Charges: Rs. {deliveryCharges}</p>
         </div>
 
-        {/* Payment Method */}
+        {/* Payment */}
         <div style={{ marginBottom: "20px" }}>
-          <label>Payment Method</label>
+          <label htmlFor="paymentMethod">Payment Method</label>
 
           <select
+            id="paymentMethod"
             value={paymentMethod}
-            onChange={(e) =>
-              setPaymentMethod(e.target.value)
-            }
+            onChange={(e) => setPaymentMethod(e.target.value)}
             style={{
               width: "100%",
               padding: "12px",
-              marginTop: "5px",
+              marginTop: "6px",
               boxSizing: "border-box",
             }}
           >
             <option value="Cash on Delivery">
               Cash on Delivery
             </option>
-
-            <option value="EasyPaisa">
-              EasyPaisa
-            </option>
+            <option value="EasyPaisa">EasyPaisa</option>
           </select>
         </div>
 
-        {/* EasyPaisa QR */}
         {paymentMethod === "EasyPaisa" && (
           <div
             style={{
@@ -739,7 +650,6 @@ function Checkout() {
             }}
           >
             <h3>EasyPaisa Payment 📱</h3>
-
             <p>Scan the QR code below to pay:</p>
 
             <img
@@ -749,50 +659,28 @@ function Checkout() {
                 width: "250px",
                 height: "250px",
                 objectFit: "contain",
-                display: "block",
-                margin: "15px auto",
               }}
             />
 
             <h3>Amount: Rs. {total}</h3>
-
-            <p
-              style={{
-                fontSize: "14px",
-                color: "#555",
-                lineHeight: "1.5",
-              }}
-            >
-              Please scan the QR code using your
-              EasyPaisa app and pay the exact amount
-              shown above.
-            </p>
-
-            <p
-              style={{
-                fontSize: "13px",
-                color: "#777",
-              }}
-            >
-              After payment, click "Place Order".
-            </p>
+            <p>After payment, click Place Order.</p>
           </div>
         )}
 
-        {/* Place Order */}
         <button
           type="submit"
+          disabled={isSubmitting}
           style={{
             width: "100%",
             padding: "14px",
             fontSize: "16px",
             fontWeight: "bold",
-            cursor: "pointer",
+            cursor: isSubmitting ? "not-allowed" : "pointer",
             border: "none",
             borderRadius: "8px",
           }}
         >
-          Place Order
+          {isSubmitting ? "Placing Order..." : "Place Order"}
         </button>
       </form>
     </div>
