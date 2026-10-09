@@ -8,6 +8,7 @@ function ProductDetails() {
   const [reviews, setReviews] = useState([]);
   const [productImages, setProductImages] = useState([]);
   const [selectedImage, setSelectedImage] = useState("");
+  const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
   const [reviewLoading, setReviewLoading] = useState(false);
   const [relatedProducts, setRelatedProducts] = useState([]);
 
@@ -85,6 +86,22 @@ function ProductDetails() {
     if (error) {
       console.error("Product error:", error);
       setLoading(false);
+      const productGallery = [
+  ...(product?.image_url
+    ? [{ type: "image", url: product.image_url }]
+    : []),
+
+  ...(productImages || [])
+    .filter((img) => img.image_url)
+    .map((img) => ({
+      type: "image",
+      url: img.image_url,
+    })),
+
+  ...(product?.video_url
+    ? [{ type: "video", url: product.video_url }]
+    : []),
+];
       return;
     }
 
@@ -384,95 +401,221 @@ function buyNow() {
               "0 5px 20px rgba(0,0,0,0.08)",
           }}
         >
-          {/* Product Image */}
+          {/* Product Image & Video Gallery */}
 
-          <div>
-            {product.image_url ? (
-              <img
-                src={selectedImage || product.image_url}
-                alt={product.name}
+<div>
+  {(() => {
+    const gallery = [
+      ...(product.image_url
+        ? [{ id: "main-image", type: "image", url: product.image_url }]
+        : []),
+
+      ...(productImages || [])
+        .filter((image) => image.image_url)
+        .map((image) => ({
+          id: image.id,
+          type: "image",
+          url: image.image_url,
+        })),
+
+      ...(product.video_url
+        ? [{ id: "product-video", type: "video", url: product.video_url }]
+        : []),
+    ].filter(
+      (media, index, arr) =>
+        arr.findIndex((item) => item.url === media.url) === index
+    );
+
+    const activeIndex = Math.max(
+      0,
+      gallery.findIndex((media) =>
+        media.type === "video"
+          ? selectedImage === "PRODUCT_VIDEO"
+          : media.url === selectedImage
+      )
+    );
+
+    const activeMedia = gallery[activeIndex];
+
+    const showMedia = (index) => {
+      const media = gallery[index];
+
+      if (media) {
+        setSelectedImage(
+          media.type === "video" ? "PRODUCT_VIDEO" : media.url
+        );
+      }
+    };
+
+    return (
+      <>
+        {/* Main Image or Video */}
+
+        <div
+          style={{
+            position: "relative",
+            width: "100%",
+          }}
+        >
+          {activeMedia?.type === "video" ? (
+            <video
+              key={activeMedia.url}
+              src={activeMedia.url}
+              controls
+              playsInline
+              preload="metadata"
+              style={{
+                width: "100%",
+                height: "450px",
+                objectFit: "contain",
+                background: "#f1ece8",
+                borderRadius: "12px",
+                display: "block",
+              }}
+            />
+          ) : activeMedia ? (
+            <img
+              src={activeMedia.url}
+              alt={product.name}
+              style={{
+                width: "100%",
+                height: "450px",
+                objectFit: "contain",
+                background: "#f1ece8",
+                borderRadius: "12px",
+                display: "block",
+              }}
+            />
+          ) : (
+            <div
+              style={{
+                height: "450px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: "#f1ece8",
+                borderRadius: "12px",
+                fontSize: "70px",
+              }}
+            >
+              🛍️
+            </div>
+          )}
+
+          {/* Left and Right Arrows */}
+
+          {gallery.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={() =>
+                  showMedia(
+                    (activeIndex - 1 + gallery.length) % gallery.length
+                  )
+                }
+                aria-label="Previous image or video"
                 style={{
-                  width: "100%",
-                  height: "450px",
-                  objectFit: "cover",
-                  borderRadius: "12px",
+                  position: "absolute",
+                  left: "10px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  width: "42px",
+                  height: "42px",
+                  border: "none",
+                  borderRadius: "50%",
+                  background: "white",
+                  fontSize: "28px",
+                  cursor: "pointer",
                 }}
-              />
-            ) : (
-              <div
+              >
+                &#8249;
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  showMedia((activeIndex + 1) % gallery.length)
+                }
+                aria-label="Next image or video"
                 style={{
-                  height: "450px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  position: "absolute",
+                  right: "10px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  width: "42px",
+                  height: "42px",
+                  border: "none",
+                  borderRadius: "50%",
+                  background: "white",
+                  fontSize: "28px",
+                  cursor: "pointer",
+                }}
+              >
+                &#8250;
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* Image and Video Thumbnails */}
+
+        {gallery.length > 1 && (
+          <div
+            style={{
+              display: "flex",
+              gap: "10px",
+              overflowX: "auto",
+              marginTop: "15px",
+              paddingBottom: "5px",
+            }}
+          >
+            {gallery.map((media, index) => (
+              <button
+                key={media.id}
+                type="button"
+                onClick={() => showMedia(index)}
+                aria-label={
+                  media.type === "video"
+                    ? "Show product video"
+                    : `Show product image ${index + 1}`
+                }
+                style={{
+                  flex: "0 0 80px",
+                  width: "80px",
+                  height: "80px",
+                  padding: "2px",
+                  border:
+                    index === activeIndex
+                      ? "2px solid #8b5e3c"
+                      : "1px solid #ddd",
+                  borderRadius: "8px",
+                  cursor: "pointer",
                   background: "#f1ece8",
-                  borderRadius: "12px",
-                  fontSize: "70px",
+                  overflow: "hidden",
                 }}
               >
-                🛍️
-              </div>
-            )}
-
-            {/* Product Video */}
-
-            {product.video_url && (
-              <div style={{ marginTop: "15px" }}>
-                <h3>Product Video 🎥</h3>
-
-                <video
-                  src={product.video_url}
-                  controls
-                  playsInline
-                  preload="metadata"
-                  muted={false}
-                  defaultMuted={false}
-                  volume={1}
-                  style={{
-                    width: "100%",
-                    maxHeight: "350px",
-                    borderRadius: "12px",
-                    display: "block",
-                  }}
-                />
-              </div>
-            )}
-
-            {/* Product Gallery */}
-
-            {productImages.length > 0 && (
-              <div
-                style={{
-                  display: "flex",
-                  gap: "10px",
-                  flexWrap: "wrap",
-                  marginTop: "15px",
-                }}
-              >
-                {productImages.map((image) => (
+                {media.type === "video" ? (
+                  <span style={{ fontSize: "28px" }}>▶️</span>
+                ) : (
                   <img
-                    key={image.id}
-                    src={image.image_url}
-                    alt={product.name}
-                    onClick={() =>
-                      setSelectedImage(image.image_url)
-                    }
+                    src={media.url}
+                    alt={`Product image ${index + 1}`}
                     style={{
-                      width: "80px",
-                      height: "80px",
+                      width: "100%",
+                      height: "100%",
                       objectFit: "cover",
-                      borderRadius: "8px",
-                      border:
-                        selectedImage === image.image_url
-                          ? "2px solid #8b5e3c"
-                          : "1px solid #ddd",
-                      cursor: "pointer",
+                      display: "block",
                     }}
                   />
-                ))}
-              </div>
-            )}
+                )}
+              </button>
+            ))}
           </div>
+        )}
+      </>
+    );
+  })()}
+</div>
 
           {/* Product Information */}
 
